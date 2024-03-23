@@ -10,22 +10,20 @@
         }
     </style>
   </head>
-  <body>
+  <body style="width: 1299px;">
     <div style="width: 1358px;"> <canvas id="canvas" width="640" height="480"></canvas>
       <canvas id="graphCanvas" width="600" height="300"></canvas> <button id="assignNamesButton"
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
-      <button id="saveButton"><img src="icons/description_FILL0_wght400_GRAD0_opsz24.svg"
-          alt=""></button> <button id="saveGraphPNGButton"><img src="icons/show_chart_FILL0_wght400_GRAD0_opsz24.svg"
-          alt=""></button> <button id="toggleCameraButton"><img src="icons/cameraswitch_FILL0_wght400_GRAD0_opsz24.svg"
-          alt=""></button></div>
-    <div style="width: 1115px; margin-left: 243px;"><img src="icons/zoom_in_FILL0_wght400_GRAD0_opsz24.svg"
-        alt=""><input id="zoomRange" min="0" max="10" step="1" value="0" type="range"><img
-        src="icons/adjust_FILL0_wght400_GRAD0_opsz24.svg" alt=""><input id="focusRange"
-        min="0" max="100" step="1" value="0" type="range"><img src="icons/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg"
-        alt=""> <input id="brightnessRange" min="0" max="200" step="1" value="100"
-        type="range"><img src="icons/contrast_FILL0_wght400_GRAD0_opsz24.svg" alt=""><input
+      <button id="saveButton">.csv<img src="icon/description_FILL0_wght400_GRAD0_opsz24.svg"></button>
+      <button id="saveGraphPNGButton">Graph<img src="icon/show_chart_FILL0_wght400_GRAD0_opsz24.svg"></button>
+      <button id="toggleCameraButton">switch cam<img src="icon/cameraswitch_FILL0_wght400_GRAD0_opsz24.svg"></button></div>
+    <div style="width: 1115px; margin-left: 243px;"><img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom<input
+        id="zoomRange" min="0" max="10" step="1" value="0" type="range"><img src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus<input
+        id="focusRange" min="0" max="100" step="1" value="0" type="range"><img src="icon/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg">
+      Brightness<input id="brightnessRange" min="0" max="200" step="1" value="100"
+        type="range"><img src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast<input
         id="contrastRange" min="0" max="200" step="1" value="100" type="range"><img
-        src="icons/opacity_FILL0_wght400_GRAD0_opsz24.svg" alt=""><input id="saturationRange"
+        src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation<input id="saturationRange"
         min="0" max="200" step="1" value="100" type="range">
       <script>
         let isFrontCamera = false;
