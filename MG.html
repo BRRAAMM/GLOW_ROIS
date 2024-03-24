@@ -12,18 +12,25 @@
   </head>
   <body style="width: 1299px;">
     <div style="width: 1358px;"> <canvas id="canvas" width="640" height="480"></canvas>
-      <canvas id="graphCanvas" width="600" height="300"></canvas> <button id="assignNamesButton"
+      <canvas id="graphCanvas" width="600" height="300"></canvas> <button id="assignNamesButton"
+
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
       <button id="saveButton">.csv<img src="icon/description_FILL0_wght400_GRAD0_opsz24.svg"></button>
       <button id="saveGraphPNGButton">Graph<img src="icon/show_chart_FILL0_wght400_GRAD0_opsz24.svg"></button>
       <button id="toggleCameraButton">switch cam<img src="icon/cameraswitch_FILL0_wght400_GRAD0_opsz24.svg"></button></div>
-    <div style="width: 1115px; margin-left: 243px;"><img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom<input
-        id="zoomRange" min="0" max="10" step="1" value="0" type="range"><img src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus<input
+    <div style="width: 1115px; margin-left: 243px;"><img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom<input
+
+        id="zoomRange" min="0" max="10" step="1" value="0" type="range"><img src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus<input
+
         id="focusRange" min="0" max="100" step="1" value="0" type="range"><img src="icon/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg">
-      Brightness<input id="brightnessRange" min="0" max="200" step="1" value="100"
-        type="range"><img src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast<input
-        id="contrastRange" min="0" max="200" step="1" value="100" type="range"><img
-        src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation<input id="saturationRange"
+      Brightness<input id="brightnessRange" min="0" max="200" step="1" value="100"
+
+        type="range"><img src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast<input
+
+        id="contrastRange" min="0" max="200" step="1" value="100" type="range"><img
+
+        src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation<input id="saturationRange"
+
         min="0" max="200" step="1" value="100" type="range">
       <script>
         let isFrontCamera = false;
@@ -39,7 +46,7 @@
         let brightnessValue = 100;
         let contrastValue = 100;
         let saturationValue = 100;
-        const MAX_DATA_POINTS = 100;
+        const MAX_DATA_POINTS = 1000000000000;
         const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
 
         // Request camera permission when the page loads
@@ -142,7 +149,7 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 60 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 3 * 1000); // Save ROI colors automatically every second
         }
 
         function updateZoom() {
