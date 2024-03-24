@@ -255,7 +255,7 @@
         function saveRoiDataToCSV() {
             let csvContent = "Time (min),";
             for (let i = 0; i < rois.length; i++) {
-                csvContent += `ROI ${i + 1},`;
+                csvContent += `ROI ${i + 1} Name,ROI ${i + 1} Intensity,`;
             }
             csvContent += "\n";
 
@@ -274,10 +274,10 @@
                     if (j < roiData[i].length) {
                         const roiMeanColor = roiData[i][j];
                         const intensity = roiMeanColor[1];
-                        csvContent += `${intensity},`;
+                        csvContent += `${rois[i][4]},${intensity},`;
                     } else {
                         // If no data available for this time point in the ROI, fill with empty value
-                        csvContent += ",";
+                        csvContent += ",,";
                     }
                 }
                 csvContent += "\n";
