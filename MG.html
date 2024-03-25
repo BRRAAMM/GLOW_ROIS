@@ -11,8 +11,8 @@
     </style>
   </head>
   <body style="width: 1299px;">
-    <div style="width: 1358px;"> <canvas id="canvas" width="1920" height="1080"></canvas>
-      <canvas id="graphCanvas" width="800" height="800"></canvas> <button id="assignNamesButton"
+    <div style="width: 1358px;"> <canvas id="canvas" width="1000" height="1000"></canvas>
+      <canvas id="graphCanvas" width="600" height="600"></canvas> <button id="assignNamesButton"
 
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
       <button id="saveButton">.csv<img src="icon/description_FILL0_wght400_GRAD0_opsz24.svg"></button>
@@ -149,7 +149,7 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 60 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 1 * 1000); // Save ROI colors automatically every second
         }
 
         function updateZoom() {
@@ -331,7 +331,7 @@
                 const intensityInterval = Math.ceil(maxIntensity / 30);
 
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
-                    const y = canvas.height - (i / maxIntensity) * (canvas.height - 20);
+                    const y = canvas.height - (i / maxIntensity) * (canvas.height - 0);
                     ctx.beginPath();
                     ctx.moveTo(40, y);
                     ctx.lineTo(30, y);
