@@ -315,9 +315,9 @@
                 ctx.stroke();
 
                 const maxTime = timeIntervals[timeIntervals.length - 1];
-                const tickInterval = Math.ceil(maxTime / 10);
+                const tickInterval = Math.ceil(maxTime / 12);
 
-                for (let t = 0; t <= maxTime; t += tickInterval) {
+                for (let t = 120; t <= maxTime; t += tickInterval) {
                     const x = (t / maxTime) * (canvas.width - 50) + 40;
                     ctx.beginPath();
                     ctx.moveTo(x, canvas.height - 40);
@@ -333,8 +333,8 @@
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
                     const y = canvas.height - (i / maxIntensity) * (canvas.height - 20);
                     ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(0, y);
+                    ctx.moveTo(40, y);
+                    ctx.lineTo(30, y);
                     ctx.stroke();
                     ctx.fillText(`${i}`, 5, y + 5);
                 }
