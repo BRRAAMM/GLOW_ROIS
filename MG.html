@@ -46,7 +46,7 @@
         let brightnessValue = 100;
         let contrastValue = 100;
         let saturationValue = 100;
-        const MAX_DATA_POINTS = 1000000000000;
+        const MAX_DATA_POINTS = 100000000000000000000;
         const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
 
         // Request camera permission when the page loads
@@ -333,8 +333,8 @@
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
                     const y = canvas.height - (i / maxIntensity) * (canvas.height - 20);
                     ctx.beginPath();
-                    ctx.moveTo(40, y);
-                    ctx.lineTo(30, y);
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(0, y);
                     ctx.stroke();
                     ctx.fillText(`${i}`, 5, y + 5);
                 }
