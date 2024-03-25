@@ -315,10 +315,10 @@
                 ctx.stroke();
 
                 const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
-                const tickInterval = Math.ceil(maxTime / 1);
+                const tickInterval = Math.ceil(maxTime / 60);
 
-                for (let t = 0; t <= maxTime; t += tickInterval) {
-                    const x = (t / maxTime) * (canvas.width - 50) + 40;
+                for (let t = 180; t <= maxTime; t += tickInterval) {
+                    const x = (t / maxTime) * (canvas.width - 40) + 40;
                     ctx.beginPath();
                     ctx.moveTo(x, canvas.height - 40);
                     ctx.lineTo(x, canvas.height);
