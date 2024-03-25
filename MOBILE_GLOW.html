@@ -5,33 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROI Color Capture</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 10px;
+        }
+
         canvas {
+            display: block;
+            margin: 0 auto;
             border: 1px solid black;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .btn {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .range-input {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="640" height="480"></canvas>
-    <canvas id="graphCanvas" width="600" height="300"></canvas>
-    <button id="assignNamesButton">Assign ROI Names</button>
-    <button id="exitButton">Exit</button>
-    <button id="saveButton">Save ROI Data</button>
-    <button id="saveGraphPNGButton">Save Graph as PNG</button>
-    
-    <script>
+<div class="container">
+    <canvas id="canvas"></canvas>
+    <canvas id="graphCanvas"></canvas>
+    <div class="btn-group">
+        <button id="assignNamesButton" class="btn" role="button"><img class="icon" src="icon/pen.svg" alt="">Assign Sample Names</button>
+        <button id="exitButton" class="btn"><img class="icon" src="icon/exit.svg" alt="">Exit</button>
+        <button id="saveButton" class="btn"><img class="icon" src="icon/save.svg" alt="">Save as CSV</button>
+        <button id="saveGraphPNGButton" class="btn"><img class="icon" src="icon/graph.svg" alt="">Save Graph</button>
+        <button id="toggleCameraButton" class="btn"><img class="icon" src="icon/camera.svg" alt="">Switch Camera</button>
+    </div>
+    <div>
+        <label for="zoomRange"><img class="icon" src="icon/zoom_in.svg" alt="">Zoom</label>
+        <input id="zoomRange" class="range-input" min="0" max="10" step="1" value="0" type="range">
+        <label for="focusRange"><img class="icon" src="icon/adjust.svg" alt="">Focus</label>
+        <input id="focusRange" class="range-input" min="0" max="100" step="1" value="0" type="range">
+        <label for="brightnessRange"><img class="icon" src="icon/brightness_medium.svg" alt="">Brightness</label>
+        <input id="brightnessRange" class="range-input" min="0" max="200" step="1" value="100" type="range">
+        <label for="contrastRange"><img class="icon" src="icon/contrast.svg" alt="">Contrast</label>
+        <input id="contrastRange" class="range-input" min="0" max="200" step="1" value="100" type="range">
+        <label for="saturationRange"><img class="icon" src="icon/opacity.svg" alt="">Saturation</label>
+        <input id="saturationRange" class="range-input" min="0" max="200" step="1" value="100" type="range">
+    </div>
+</div>
+
+      <script>
+        let isFrontCamera = false;
+        let stream = null;
+        let rois = [];
+        let roiData = [];
+        let timeIntervals = [];
+        let cap = null;
+        let recordingActive = false;
+        let frame = null;
+        let zoomValue = 0;
+        let focusValue = 0;
+        let brightnessValue = 100;
+        let contrastValue = 100;
+        let saturationValue = 100;
+        const MAX_DATA_POINTS = 100000000000000;
+        const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
+
         // Request camera permission when the page loads
         document.addEventListener('DOMContentLoaded', function() {
+            toggleCameraButton.addEventListener('click', toggleCamera);
+            zoomRange.addEventListener('input', updateZoom);
+            focusRange.addEventListener('input', updateFocus);
+            brightnessRange.addEventListener('input', updateBrightness);
+            contrastRange.addEventListener('input', updateContrast);
+            saturationRange.addEventListener('input', updateSaturation);
+            requestCameraPermission();
+        });
+
+        function requestCameraPermission() {
             const constraints = {
                 video: {
-                    facingMode: { exact: "environment" } // Request back camera only
+                    facingMode: isFrontCamera ? "user" : "environment",
+                    zoom: zoomValue,
+                    focusDistance: focusValue,
+                    brightness: brightnessValue,
+                    contrast: contrastValue,
+                    saturation: saturationValue
                 }
             };
-            
+
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia(constraints)
-                    .then(function(stream) {
-                        // Camera access is granted
-                        initializeCamera(stream);
+                    .then(function(s) {
+                        stream = s;
+                        initializeCamera();
                     })
                     .catch(function(err) {
                         console.error('Error accessing camera:', err);
@@ -41,45 +140,25 @@
                 console.error('getUserMedia is not supported on your browser');
                 alert('Camera access is not supported on your browser.');
             }
-        });
+        }
 
-        let rois = [];
-        let roiData = [];
-        let timeIntervals = [];
-        let cap = null;
-        let recordingActive = false;
-        let frame = null;
-        const MAX_DATA_POINTS = 100;
-        const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
+        function toggleCamera() {
+            isFrontCamera = !isFrontCamera;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            requestCameraPermission();
+        }
 
         function initializeCamera() {
             cap = document.createElement('video');
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(stream) {
-                    cap.srcObject = stream;
-                    cap.play(); // Start video playback
-                    cap.onloadedmetadata = function() {
-                        startRecording(); // Start recording automatically
-                        updateFeed(); // Start updating feed
-                        updateRealtimeGraph(); // Start updating graph
-                    };
-                })
-                .catch(function(err) {
-                    console.error('Error accessing camera:', err);
-                    alert('Error accessing camera. Please grant camera permission to run this application.');
-                });
-        }
-
-        function requestCameraPermission() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(stream) {
-                    // Camera access is granted
-                    initializeCamera();
-                })
-                .catch(function(err) {
-                    console.error('Error accessing camera:', err);
-                    alert('Error accessing camera. Please grant camera permission to run this application.');
-                });
+            cap.srcObject = stream;
+            cap.play(); // Start video playback
+            cap.onloadedmetadata = function() {
+                startRecording(); // Start recording automatically
+                updateFeed(); // Start updating feed
+                updateRealtimeGraph(); // Start updating graph
+            };
         }
 
         function getFrame() {
@@ -124,7 +203,61 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 60 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 10 * 1000); // Save ROI colors automatically every second
+        }
+
+        function updateZoom() {
+            zoomValue = parseFloat(zoomRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateFocus() {
+            focusValue = parseFloat(focusRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateBrightness() {
+            brightnessValue = parseFloat(brightnessRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateContrast() {
+            contrastValue = parseFloat(contrastRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateSaturation() {
+            saturationValue = parseFloat(saturationRange.value);
+            applyCameraConstraints();
+        }
+
+        function applyCameraConstraints() {
+            if (stream) {
+                const tracks = stream.getVideoTracks();
+                if (tracks.length > 0) {
+                    const settings = tracks[0].getSettings();
+                    const capabilities = tracks[0].getCapabilities();
+                    const constraints = {
+                        zoom: zoomValue,
+                        focusDistance: focusValue,
+                        brightness: brightnessValue,
+                        contrast: contrastValue,
+                        saturation: saturationValue
+                    };
+                    // Check if constraints are supported by the browser and the device
+                    if ('applyConstraints' in tracks[0] && typeof tracks[0].applyConstraints === 'function') {
+                        tracks[0].applyConstraints(constraints)
+                            .then(() => {
+                                console.log('Camera constraints applied successfully.');
+                            })
+                            .catch((error) => {
+                                console.error('Failed to apply camera constraints:', error);
+                            });
+                    } else {
+                        console.warn('Camera constraints are not supported.');
+                    }
+                }
+            }
         }
 
         function assignRoiNames() {
@@ -187,22 +320,22 @@
                 }
             }
 
-                for (let j = 0; j < maxDataPoints; j++) {
-        const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
-        csvContent += `${time.toFixed(2)},`;
+            for (let j = 0; j < maxDataPoints; j++) {
+                const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
+                csvContent += `${time.toFixed(2)},`;
 
-        for (let i = 0; i < rois.length; i++) {
-            if (j < roiData[i].length) {
-                const roiMeanColor = roiData[i][j];
-                const intensity = roiMeanColor[1];
-                csvContent += `${intensity},`;
-            } else {
-                // If no data available for this time point in the ROI, fill with empty value
-                csvContent += ",";
+                for (let i = 0; i < rois.length; i++) {
+                    if (j < roiData[i].length) {
+                        const roiMeanColor = roiData[i][j];
+                        const intensity = roiMeanColor[1];
+                        csvContent += `${intensity},`;
+                    } else {
+                        // If no data available for this time point in the ROI, fill with empty value
+                        csvContent += ",";
+                    }
+                }
+                csvContent += "\n";
             }
-        }
-        csvContent += "\n";
-    }
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -220,8 +353,6 @@
             link.href = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
             link.click();
         }
-
-        
 
         function updateRealtimeGraph() {
             if (roiData.length > 0) {
@@ -278,7 +409,8 @@
                     const xIncrement = (canvas.width - 50) / xValues[xValues.length - 1];
                     const yIncrement = (canvas.height - 20) / maxIntensity;
                     ctx.moveTo(40 + xValues[0] * xIncrement, canvas.height - 10 - yValues[0] * yIncrement);
-                    for (let j = 1; j < xValues.length; j++) {
+                    for (
+let j = 1; j < xValues.length; j++) {
                         const x = 40 + xValues[j] * xIncrement;
                         const y = canvas.height - 10 - yValues[j] * yIncrement;
                         ctx.lineTo(x, y);
@@ -296,11 +428,12 @@
         document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
 
         function closeApp() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
             window.close();
         }
 
-        initializeCamera();
-    </script>
-</body>
+    </script> </div>
+  </body>
 </html>
-               
