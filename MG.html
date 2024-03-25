@@ -320,7 +320,7 @@
                 for (let t = 180; t <= maxTime; t += tickInterval) {
                     const x = (t / maxTime) * (canvas.width - 40) + 40;
                     ctx.beginPath();
-                    ctx.moveTo(x, canvas.height - 40);
+                    ctx.moveTo(x, canvas.height - 10);
                     ctx.lineTo(x, canvas.height);
                     ctx.stroke();
                     ctx.fillStyle = 'black';
