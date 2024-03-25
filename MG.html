@@ -314,21 +314,21 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                const maxTime = timeIntervals[timeIntervals.length - 1];
-                const tickInterval = Math.ceil(maxTime / 12);
+                const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
+                const tickInterval = Math.ceil(maxTime / 1);
 
-                for (let t = 120; t <= maxTime; t += tickInterval) {
+                for (let t = 0; t <= maxTime; t += tickInterval) {
                     const x = (t / maxTime) * (canvas.width - 50) + 40;
                     ctx.beginPath();
                     ctx.moveTo(x, canvas.height - 40);
                     ctx.lineTo(x, canvas.height);
                     ctx.stroke();
                     ctx.fillStyle = 'black';
-                    ctx.fillText(`${t} min`, x + 30, canvas.height - 5);
+                    ctx.fillText(`${t.toFixed(1)} min`, x + 30, canvas.height - 5);
                 }
 
-                const maxIntensity = 255;
-                const intensityInterval = Math.ceil(maxIntensity / 5);
+                const maxIntensity = 300;
+                const intensityInterval = Math.ceil(maxIntensity / 30);
 
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
                     const y = canvas.height - (i / maxIntensity) * (canvas.height - 20);
@@ -355,8 +355,7 @@
                     const xIncrement = (canvas.width - 50) / xValues[xValues.length - 1];
                     const yIncrement = (canvas.height - 20) / maxIntensity;
                     ctx.moveTo(40 + xValues[0] * xIncrement, canvas.height - 10 - yValues[0] * yIncrement);
-                    for (
-let j = 1; j < xValues.length; j++) {
+                    for (let j = 1; j < xValues.length; j++) {
                         const x = 40 + xValues[j] * xIncrement;
                         const y = canvas.height - 10 - yValues[j] * yIncrement;
                         ctx.lineTo(x, y);
