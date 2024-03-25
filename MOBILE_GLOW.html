@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROI Color Capture</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="pptxgen.bundle.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -71,7 +71,7 @@
         <button id="exitButton" class="btn"><img class="icon" src="icon/exit.svg" alt="">Exit</button>
         <button id="saveButton" class="btn"><img class="icon" src="icon/save.svg" alt="">Save as CSV</button>
         <button id="saveGraphPNGButton" class="btn"><img class="icon" src="icon/graph.svg" alt="">Save Graph</button>
-        <button id="saveGraphPDFButton" class="btn"><img class="icon" src="icon/pdf.svg" alt="">Save Graph as PDF</button>
+        <button id="saveGraphPPTXButton" class="btn"><img class="icon" src="icon/pptx.svg" alt="">Save Graph as PPTX</button>
         <button id="toggleCameraButton" class="btn"><img class="icon" src="icon/camera.svg" alt="">Switch Camera</button>
     </div>
     <div>
@@ -347,21 +347,24 @@
             link.click();
             document.body.removeChild(link);
         }
-          
-        function saveGraphAsPDF() {
+        
+        function saveGraphAsPPTX() {
+            const pptx = new PptxGenJS();
             const graphCanvas = document.getElementById('graphCanvas');
-            const pdf = new jsPDF();
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = pdfWidth;
-            tempCanvas.height = pdfHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(graphCanvas, 0, 0, pdfWidth, pdfHeight);
-            const imgData = tempCanvas.toDataURL('image/jpeg', 1.0);
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save('graph.pdf');
-        }
+            const imgData = graphCanvas.toDataURL('image/jpeg', 1.0);
+
+        // Add slide with graph image
+            pptx.defineSlideMaster({
+                title: 'MASTER_SLIDE',
+                objects: [
+                    { image: { x: 0.5, y: 1.0, w: 10, h: 5, data: imgData } }
+                ]
+            });
+
+            pptx.addSlide('MASTER_SLIDE');
+
+            pptx.writeFile('graph.pptx');
+        }  
         function saveGraphAsPNG() {
             const canvas = document.getElementById('graphCanvas');
             const link = document.createElement('a');
@@ -441,7 +444,7 @@ let j = 1; j < xValues.length; j++) {
         document.getElementById('canvas').addEventListener('click', createRoi);
         document.getElementById('exitButton').addEventListener('click', () => { closeApp(); });
         document.getElementById('saveButton').addEventListener('click', saveRoiDataToCSV);
-        document.getElementById('saveGraphPDFButton').addEventListener('click', saveGraphAsPDF);
+        document.getElementById('saveGraphPPTXButton').addEventListener('click', saveGraphAsPPTX);
         document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
 
         function closeApp() {
