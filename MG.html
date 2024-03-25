@@ -321,17 +321,20 @@ function updateRealtimeGraph() {
         ctx.stroke();
 
         const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
-        const tickInterval = Math.ceil(maxTime / 60);
+        const tickInterval = Math.ceil(maxTime / 12);
 
         // Draw X-axis ticks and labels
-        for (let t = 180; t <= maxTime; t += tickInterval) {
+        for (let t = 0; t <= maxTime; t += tickInterval) {
             const x = 50 + (t / maxTime) * (canvas.width - 70);
             ctx.beginPath();
             ctx.moveTo(x, canvas.height - 40);
             ctx.lineTo(x, canvas.height - 30);
             ctx.stroke();
             ctx.fillStyle = 'black';
-            ctx.fillText(`${t.toFixed(1)} min`, x - 20, canvas.height - 20);
+            // Convert time to minutes and display as label
+            const minutes = Math.floor(t);
+            const seconds = Math.round((t - minutes) * 60);
+            ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
         }
 
         const maxIntensity = 300;
