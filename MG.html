@@ -300,71 +300,80 @@
             link.click();
         }
 
-        function updateRealtimeGraph() {
-            if (roiData.length > 0) {
-                const canvas = document.getElementById('graphCanvas');
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updateRealtimeGraph() {
+    if (roiData.length > 0) {
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx.beginPath();
-                ctx.moveTo(40, 20);
-                ctx.lineTo(40, canvas.height - 40);
-                ctx.lineTo(canvas.width - 40, canvas.height - 40);
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+        // Draw X-axis
+        ctx.beginPath();
+        ctx.moveTo(50, canvas.height - 40);
+        ctx.lineTo(canvas.width - 20, canvas.height - 40);
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-                const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
-                const tickInterval = Math.ceil(maxTime / 60);
+        // Draw Y-axis
+        ctx.beginPath();
+        ctx.moveTo(50, 20);
+        ctx.lineTo(50, canvas.height - 40);
+        ctx.stroke();
 
-                for (let t = 180; t <= maxTime; t += tickInterval) {
-                    const x = (t / maxTime) * (canvas.width - 50) + 40;
-                    ctx.beginPath();
-                    ctx.moveTo(x, canvas.height - 10);
-                    ctx.lineTo(x, canvas.height);
-                    ctx.stroke();
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(`${t.toFixed(1)} min`, x + 30, canvas.height - 5);
-                }
+        const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
+        const tickInterval = Math.ceil(maxTime / 60);
 
-                const maxIntensity = 300;
-                const intensityInterval = Math.ceil(maxIntensity / 30);
-
-                for (let i = 0; i <= maxIntensity; i += intensityInterval) {
-                    const y = canvas.height - (i / maxIntensity) * (canvas.height - 5);
-                    ctx.beginPath();
-                    ctx.moveTo(40, y);
-                    ctx.lineTo(30, y);
-                    ctx.stroke();
-                    ctx.fillText(`${i}`, 5, y + 5);
-                }
-
-                for (let i = 0; i < roiData.length; i++) {
-                    const data = roiData[i];
-                    const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
-                    const xValues = [];
-                    const yValues = [];
-                    for (let j = startIdx; j < data.length; j++) {
-                        const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / 60000;
-                        xValues.push(timeInterval);
-                        yValues.push(data[j][1]);
-                    }
-                    ctx.beginPath();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
-                    const xIncrement = (canvas.width - 50) / xValues[xValues.length - 1];
-                    const yIncrement = (canvas.height - 20) / maxIntensity;
-                    ctx.moveTo(40 + xValues[0] * xIncrement, canvas.height - 10 - yValues[0] * yIncrement);
-                    for (let j = 1; j < xValues.length; j++) {
-                        const x = 40 + xValues[j] * xIncrement;
-                        const y = canvas.height - 10 - yValues[j] * yIncrement;
-                        ctx.lineTo(x, y);
-                    }
-                    ctx.stroke();
-                }
-            }
-            requestAnimationFrame(updateRealtimeGraph);
+        // Draw X-axis ticks and labels
+        for (let t = 180; t <= maxTime; t += tickInterval) {
+            const x = 50 + (t / maxTime) * (canvas.width - 70);
+            ctx.beginPath();
+            ctx.moveTo(x, canvas.height - 40);
+            ctx.lineTo(x, canvas.height - 30);
+            ctx.stroke();
+            ctx.fillStyle = 'black';
+            ctx.fillText(`${t.toFixed(1)} min`, x - 20, canvas.height - 20);
         }
+
+        const maxIntensity = 300;
+        const intensityInterval = Math.ceil(maxIntensity / 30);
+
+        // Draw Y-axis ticks and labels
+        for (let i = 0; i <= maxIntensity; i += intensityInterval) {
+            const y = canvas.height - 40 - (i / maxIntensity) * (canvas.height - 60);
+            ctx.beginPath();
+            ctx.moveTo(50, y);
+            ctx.lineTo(60, y);
+            ctx.stroke();
+            ctx.fillText(`${i}`, 20, y + 5);
+        }
+
+        for (let i = 0; i < roiData.length; i++) {
+            const data = roiData[i];
+            const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
+            const xValues = [];
+            const yValues = [];
+            for (let j = startIdx; j < data.length; j++) {
+                const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
+                xValues.push(timeInterval);
+                yValues.push(data[j][1]);
+            }
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
+            const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
+            const yIncrement = (canvas.height - 60) / maxIntensity;
+            ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
+            for (let j = 1; j < xValues.length; j++) {
+                const x = 50 + xValues[j] * xIncrement;
+                const y = canvas.height - 40 - yValues[j] * yIncrement;
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+    }
+    requestAnimationFrame(updateRealtimeGraph);
+}
+
 
         document.getElementById('assignNamesButton').addEventListener('click', assignRoiNames);
         document.getElementById('canvas').addEventListener('click', createRoi);
