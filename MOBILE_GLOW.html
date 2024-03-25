@@ -350,10 +350,10 @@
           
         function saveGraphAsPDF() {
             const graphCanvas = document.getElementById('graphCanvas');
+            const imgData = graphCanvas.toDataURL('image/jpeg', 1.0);
             const pdf = new jsPDF();
-            pdf.addHTML(graphCanvas, function () {
-                pdf.save('graph.pdf');
-        });
+            pdf.addImage(imgData, 'JPEG', 0, 0, graphCanvas.width, graphCanvas.height);
+            pdf.save('graph.pdf');
         }
         function saveGraphAsPNG() {
             const canvas = document.getElementById('graphCanvas');
