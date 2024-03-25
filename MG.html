@@ -11,7 +11,7 @@
     </style>
   </head>
   <body style="width: 1299px;">
-    <div style="width: 1358px;"> <canvas id="canvas" width="1000" height="1000"></canvas>
+    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="600"></canvas>
       <canvas id="graphCanvas" width="600" height="600"></canvas> <button id="assignNamesButton"
 
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
@@ -324,17 +324,17 @@
                     ctx.lineTo(x, canvas.height);
                     ctx.stroke();
                     ctx.fillStyle = 'black';
-                    ctx.fillText(`${t.toFixed(1)} min`, x + 30, canvas.height - 5);
+                    ctx.fillText(`${t.toFixed(1)} min`, x + 30, canvas.height + 5);
                 }
 
                 const maxIntensity = 300;
                 const intensityInterval = Math.ceil(maxIntensity / 30);
 
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
-                    const y = canvas.height - (i / maxIntensity) * (canvas.height - 0);
+                    const y = canvas.height - (i / maxIntensity) * (canvas.height - 10);
                     ctx.beginPath();
                     ctx.moveTo(40, y);
-                    ctx.lineTo(30, y);
+                    ctx.lineTo(40, y);
                     ctx.stroke();
                     ctx.fillText(`${i}`, 5, y + 5);
                 }
