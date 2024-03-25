@@ -308,7 +308,7 @@ function updateRealtimeGraph() {
 
         // Draw X-axis
         ctx.beginPath();
-        ctx.moveTo(60, canvas.height - 40);
+        ctx.moveTo(50, canvas.height - 40);
         ctx.lineTo(canvas.width - 20, canvas.height - 40);
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
@@ -316,19 +316,19 @@ function updateRealtimeGraph() {
 
         // Draw Y-axis
         ctx.beginPath();
-        ctx.moveTo(60, 20);
-        ctx.lineTo(60, canvas.height - 40);
+        ctx.moveTo(50, 20);
+        ctx.lineTo(50, canvas.height - 40);
         ctx.stroke();
 
         // Draw X-axis title
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
-        ctx.font = 'bold 14px Arial';
+        ctx.font = 'bold 10px Arial';
         ctx.fillText('Time (minutes)', canvas.width / 2, canvas.height - 10);
 
         // Draw Y-axis title
         ctx.save();
-        ctx.translate(15, canvas.height / 2);
+        ctx.translate(10, canvas.height / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
         ctx.fillText('Fluorescent Intensity', 0, 0);
