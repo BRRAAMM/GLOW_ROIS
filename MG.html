@@ -11,7 +11,7 @@
     </style>
   </head>
   <body style="width: 1299px;">
-    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="600"></canvas>
+    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="800"></canvas>
       <canvas id="graphCanvas" width="600" height="600"></canvas> <button id="assignNamesButton"
 
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
@@ -47,7 +47,7 @@
         let contrastValue = 100;
         let saturationValue = 100;
         const MAX_DATA_POINTS = 100000000000000000000;
-        const colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
+        const colors = ['blue', 'red', 'green', 'purple', 'orange', 'cyan', 'yellow', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
 
         // Request camera permission when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -219,7 +219,7 @@
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            const RECTANGLE_SIZE = 5;
+            const RECTANGLE_SIZE = 20;
             const x1 = x - RECTANGLE_SIZE / 2;
             const y1 = y - RECTANGLE_SIZE / 2;
             const x2 = x1 + RECTANGLE_SIZE;
@@ -351,8 +351,8 @@ function updateRealtimeGraph() {
             ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
         }
 
-        const maxIntensity = 300;
-        const intensityInterval = Math.ceil(maxIntensity / 30);
+        const maxIntensity = 200;
+        const intensityInterval = Math.ceil(maxIntensity / 5);
 
         // Draw Y-axis ticks and labels
         for (let i = 0; i <= maxIntensity; i += intensityInterval) {
