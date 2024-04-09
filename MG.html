@@ -219,7 +219,7 @@
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            const RECTANGLE_SIZE = 20;
+            const RECTANGLE_SIZE = 10;
             const x1 = x - RECTANGLE_SIZE / 2;
             const y1 = y - RECTANGLE_SIZE / 2;
             const x2 = x1 + RECTANGLE_SIZE;
@@ -351,8 +351,8 @@ function updateRealtimeGraph() {
             ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
         }
 
-        const maxIntensity = 200;
-        const intensityInterval = Math.ceil(maxIntensity / 5);
+        const maxIntensity = 300;
+        const intensityInterval = Math.ceil(maxIntensity / 60);
 
         // Draw Y-axis ticks and labels
         for (let i = 0; i <= maxIntensity; i += intensityInterval) {
