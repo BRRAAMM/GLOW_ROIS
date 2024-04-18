@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,8 +13,11 @@
   </head>
   <body style="width: 1299px;">
     <div style="width: 1358px;"> <canvas id="canvas" width="800" height="800"></canvas>
+			<div id="legendContainer">
+    <canvas id="legendCanvas" width="600" height="300"></canvas>
+</div>
       <canvas id="graphCanvas" width="600" height="600"></canvas> <button id="assignNamesButton"
-
+	
         role="button">Assign Sample Names</button> <button id="exitButton">Exit</button>
       <button id="saveButton">.csv<img src="icon/description_FILL0_wght400_GRAD0_opsz24.svg"></button>
       <button id="saveGraphPNGButton">Graph<img src="icon/show_chart_FILL0_wght400_GRAD0_opsz24.svg"></button>
@@ -47,7 +51,7 @@
         let contrastValue = 100;
         let saturationValue = 100;
         const MAX_DATA_POINTS = 100000000000000000000;
-        const colors = ['blue', 'red', 'green', 'purple', 'orange', 'cyan', 'yellow', 'Maroon', 'Navy blue', 'Olive', 'Pink', 'Grey', 'Brown', 'Mustard', 'Teal']; // Define an array of colors
+        const colors = ['blue']; // Define an array of colors
 
         // Request camera permission when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -149,7 +153,7 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 60 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 3 * 1000); // Save ROI colors automatically every second
         }
 
         function updateZoom() {
@@ -364,7 +368,7 @@ function updateRealtimeGraph() {
             ctx.fillText(`${i}`, 30, y + 5);
         }
 
-        for (let i = 0; i < roiData.length; i++) {
+                 for (let i = 0; i < roiData.length; i++) {
             const data = roiData[i];
             const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
             const xValues = [];
@@ -373,10 +377,18 @@ function updateRealtimeGraph() {
                 const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
                 xValues.push(timeInterval);
                 yValues.push(data[j][1]);
+
+                // Change graph color to green if y-value exceeds 50
+                if (data[j][1] > 50) {
+                    ctx.strokeStyle = 'green';
+                } else {
+                    ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
+                }
             }
+
+            // Draw the graph
             ctx.beginPath();
             ctx.lineWidth = 2;
-            ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
             const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
             const yIncrement = (canvas.height - 60) / maxIntensity;
             ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
@@ -387,8 +399,48 @@ function updateRealtimeGraph() {
             }
             ctx.stroke();
         }
+
+        const legendCanvas = document.getElementById('legendCanvas');
+        const legendCtx = legendCanvas.getContext('2d');
+        legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
+
+
+// Draw legends
+legendCtx.fillStyle = 'black';
+legendCtx.font = '12px Arial';
+const legendBoxSize = 20;
+const legendSpacing = 5;
+const maxLegendsPerColumn = 10;
+const legendContainerWidth = legendCanvas.width;
+const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
+const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
+
+for (let col = 0; col < numColumns; col++) {
+    for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
+        const rowIndex = i % maxLegendsPerColumn;
+        const legendX = col * columnWidth;
+        const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
+
+        // Change the fill style to match the graph color
+        if (roiData[i] && roiData[i].length > 0) {
+            const lastDataPoint = roiData[i][roiData[i].length - 1];
+            if (lastDataPoint[1] > 50) {
+                legendCtx.fillStyle = 'green'; // Change to green if intensity exceeds 50
+            } else {
+                legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
+            }
+        } else {
+            legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
+        }
+
+        // Draw legend box and text
+        legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+        legendCtx.fillStyle = 'black';
+        legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
     }
-    requestAnimationFrame(updateRealtimeGraph);
+}
+        }    
+requestAnimationFrame(updateRealtimeGraph);
 }
 
 
