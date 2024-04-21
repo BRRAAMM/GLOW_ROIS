@@ -51,7 +51,7 @@
         let contrastValue = 100;
         let saturationValue = 100;
         const MAX_DATA_POINTS = 100000000000000000000;
-        const colors = ['azure']; // Define an array of colors
+        const colors = ['cornflowerblue']; // Define an array of colors
 
         // Request camera permission when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -425,7 +425,7 @@ for (let col = 0; col < numColumns; col++) {
         if (roiData[i] && roiData[i].length > 0) {
             const lastDataPoint = roiData[i][roiData[i].length - 1];
             if (lastDataPoint[1] > 35) {
-                legendCtx.fillStyle = 'green'; // Change to green if intensity exceeds 50
+                legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
             } else {
                 legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
             }
