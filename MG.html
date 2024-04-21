@@ -355,8 +355,8 @@ function updateRealtimeGraph() {
             ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
         }
 
-        const maxIntensity = 250;
-        const intensityInterval = Math.ceil(maxIntensity / 50);
+        const maxIntensity = 200;
+        const intensityInterval = Math.ceil(maxIntensity / 40);
 
         // Draw Y-axis ticks and labels
         for (let i = 0; i <= maxIntensity; i += intensityInterval) {
@@ -379,26 +379,35 @@ function updateRealtimeGraph() {
                 yValues.push(data[j][1]);
 
                 // Change graph color to green if y-value exceeds 50
-                if (data[j][1] > 35) {
+                if (data[j][1] > 45) {
                     ctx.strokeStyle = 'lawngreen';
                 } else {
                     ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
                 }
             }
 
-            // Draw the graph
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
-            const yIncrement = (canvas.height - 60) / maxIntensity;
-            ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
-            for (let j = 1; j < xValues.length; j++) {
-                const x = 50 + xValues[j] * xIncrement;
-                const y = canvas.height - 40 - yValues[j] * yIncrement;
-                ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-        }
+            // Draw the graph line
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
+    const yIncrement = (canvas.height - 60) / maxIntensity;
+    ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
+    for (let j = 1; j < xValues.length; j++) {
+        const x = 50 + xValues[j] * xIncrement;
+        const y = canvas.height - 40 - yValues[j] * yIncrement;
+        ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw sample name at the end of the graph line
+    const lastDataPointIndex = data.length - 1;
+    if (lastDataPointIndex >= 0) {
+        const x = 50 + xValues[lastDataPointIndex] * xIncrement;
+        const y = canvas.height - 40 - yValues[lastDataPointIndex] * yIncrement;
+        ctx.fillStyle = 'black';
+        ctx.fillText(rois[i][4], x + 5, y - 5); // Adjust the position as needed
+    }
+}
 
         const legendCanvas = document.getElementById('legendCanvas');
         const legendCtx = legendCanvas.getContext('2d');
@@ -424,7 +433,7 @@ for (let col = 0; col < numColumns; col++) {
         // Change the fill style to match the graph color
         if (roiData[i] && roiData[i].length > 0) {
             const lastDataPoint = roiData[i][roiData[i].length - 1];
-            if (lastDataPoint[1] > 35) {
+            if (lastDataPoint[1] > 45) {
                 legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
             } else {
                 legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
