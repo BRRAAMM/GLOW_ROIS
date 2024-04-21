@@ -12,7 +12,7 @@
     </style>
   </head>
   <body style="width: 1299px;">
-    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="800"></canvas>
+    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="600"></canvas>
 			<div id="legendContainer">
     <canvas id="legendCanvas" width="900" height="300"></canvas>
 </div>
@@ -379,8 +379,8 @@ function updateRealtimeGraph() {
                 yValues.push(data[j][1]);
 
                 // Change graph color to green if y-value exceeds 50
-                if (data[j][1] > 50) {
-                    ctx.strokeStyle = 'green';
+                if (data[j][1] > 35) {
+                    ctx.strokeStyle = 'lawngreen';
                 } else {
                     ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
                 }
