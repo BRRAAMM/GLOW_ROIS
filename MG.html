@@ -379,7 +379,7 @@ function updateRealtimeGraph() {
                 yValues.push(data[j][1]);
 
                 // Change graph color to green if y-value exceeds 50
-                if (data[j][1] > 45) {
+                if (data[j][1] > 50) {
                     ctx.strokeStyle = 'lawngreen';
                 } else {
                     ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
@@ -433,7 +433,7 @@ for (let col = 0; col < numColumns; col++) {
         // Change the fill style to match the graph color
         if (roiData[i] && roiData[i].length > 0) {
             const lastDataPoint = roiData[i][roiData[i].length - 1];
-            if (lastDataPoint[1] > 45) {
+            if (lastDataPoint[1] > 50) {
                 legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
             } else {
                 legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
