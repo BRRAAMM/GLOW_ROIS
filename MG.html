@@ -11,6 +11,8 @@
         }
     </style>
   </head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+
   <body style="width: 1299px;">
     <div style="width: 1358px;"> <canvas id="canvas" width="800" height="600"></canvas>
 			<div id="legendContainer">
@@ -303,7 +305,54 @@
             link.href = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
             link.click();
         }
+function saveRoiDataToExcel() {
+    const wb = XLSX.utils.book_new(); // Create a new workbook
 
+    // Add worksheet for ROI data
+    const wsData = [];
+
+    // Add header row
+    const headerRow = ["Time (min)"];
+    for (let i = 0; i < rois.length; i++) {
+        headerRow.push(`ROI ${i + 1} Name`);
+        headerRow.push(`ROI ${i + 1} Intensity`);
+    }
+    wsData.push(headerRow);
+
+    // Add data rows
+    for (let j = 0; j < timeIntervals.length; j++) {
+        const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
+        const rowData = [time.toFixed(2)];
+        for (let i = 0; i < rois.length; i++) {
+            if (j < roiData[i].length) {
+                const intensity = roiData[i][j][1];
+                rowData.push(rois[i][4]);
+                rowData.push(intensity);
+            } else {
+                rowData.push("");
+                rowData.push("");
+            }
+        }
+        wsData.push(rowData);
+    }
+
+    // Convert data to worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'ROI Data');
+
+    // Save workbook to Excel file
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'roi_data.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 function updateRealtimeGraph() {
     if (roiData.length > 0) {
         const canvas = document.getElementById('graphCanvas');
@@ -459,6 +508,7 @@ requestAnimationFrame(updateRealtimeGraph);
         document.getElementById('exitButton').addEventListener('click', () => { closeApp(); });
         document.getElementById('saveButton').addEventListener('click', saveRoiDataToCSV);
         document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
+	document.getElementById('saveButton').addEventListener('click', saveRoiDataToExcel);
 
         function closeApp() {
             if (stream) {
