@@ -404,8 +404,8 @@ function updateRealtimeGraph() {
             ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
         }
 
-        const maxIntensity = 200;
-        const intensityInterval = Math.ceil(maxIntensity / 40);
+        const maxIntensity = 300;
+        const intensityInterval = Math.ceil(maxIntensity / 60);
 
         // Draw Y-axis ticks and labels
         for (let i = 0; i <= maxIntensity; i += intensityInterval) {
