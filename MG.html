@@ -464,43 +464,55 @@ function updateRealtimeGraph() {
 
 
 // Draw legends
-legendCtx.fillStyle = 'black';
-legendCtx.font = '12px Arial';
-const legendBoxSize = 20;
-const legendSpacing = 5;
-const maxLegendsPerColumn = 10;
-const legendContainerWidth = legendCanvas.width;
-const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
-const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
-
-for (let col = 0; col < numColumns; col++) {
-    for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
-        const rowIndex = i % maxLegendsPerColumn;
-        const legendX = col * columnWidth;
-        const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
-
-        // Change the fill style to match the graph color
-        if (roiData[i] && roiData[i].length > 0) {
-            const lastDataPoint = roiData[i][roiData[i].length - 1];
-            if (lastDataPoint[1] > 50) {
-                legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
-            } else {
-                legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
-            }
-        } else {
-            legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
-        }
-
-        // Draw legend box and text
-        legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
         legendCtx.fillStyle = 'black';
-        legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-    }
-}
-        }    
-requestAnimationFrame(updateRealtimeGraph);
-}
+        legendCtx.font = '12px Arial';
+        const legendBoxSize = 20;
+        const legendSpacing = 5;
+        const maxLegendsPerColumn = 10;
+        const legendContainerWidth = legendCanvas.width;
+        const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
+        const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
 
+        for (let col = 0; col < numColumns; col++) {
+            for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
+                const rowIndex = i % maxLegendsPerColumn;
+                const legendX = col * columnWidth;
+                const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
+
+                // Change the fill style to match the graph color
+                if (roiData[i] && roiData[i].length > 0) {
+                    const lastDataPoint = roiData[i][roiData[i].length - 1];
+                    if (lastDataPoint[1] > 50) {
+                        // Draw legend box and text
+                        legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
+                        legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                        legendCtx.fillStyle = 'black';
+                        legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+
+                        // Display time point alongside ROI if intensity exceeds 50
+                        const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 50);
+                        if (timeIndex !== -1) {
+                            const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (60 * 1000); // Convert to minutes
+                            legendCtx.fillText(`(${timeInterval.toFixed(2)}m)`, legendX + 80, legendY + legendBoxSize / 2 + 5);
+                        }
+                    } else {
+                        legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
+                        legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                        legendCtx.fillStyle = 'black';
+                        legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+                    }
+                } else {
+                    legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
+                    legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                    legendCtx.fillStyle = 'black';
+                    legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+                }
+            }
+        }
+    }
+
+    requestAnimationFrame(updateRealtimeGraph);
+}
 
 
         document.getElementById('assignNamesButton').addEventListener('click', assignRoiNames);
