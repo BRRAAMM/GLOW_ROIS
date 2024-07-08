@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legend Data Analysis with Charts</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .summary {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #analysis {
+            margin-top: 20px;
+        }
+
+        #analysis h3 {
+            margin-bottom: 5px;
+        }
+
+        .positive {
+            color: rgb(226, 2, 2);
+            /* Red color for positive */
+        }
+
+        .invalid {
+            color: rgb(23, 0, 126);
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #00a005;
+            /* Green color for negative */
+            font-weight: bold;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+
+        #chartContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="file" id="excelFileInput" accept=".xlsx">
+    <div id="output"></div>
+    <div id="analysis">
+        <div id="analysisResults"></div>
+    </div>
+
+    <div id="summary" class="summary"></div>
+    <div id="chartContainer">
+        <!-- Charts will be dynamically added here -->
+    </div>
+    <button onclick="exportToExcel()">Export to Excel</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let rois = []; // Global variable to store ROI data from uploaded file
+
+        document.getElementById('excelFileInput').addEventListener('change', handleFile);
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Assuming we only have one sheet in the workbook
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+
+                // Convert the sheet to JSON
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                // Group data by legend names without prefixes
+                const groupedData = groupByLegendName(jsonData);
+
+                // Display the original data in an HTML table
+                // displayData(jsonData);
+
+                // Display the grouped data in the analysis section
+                displayGroupedData(groupedData);
+
+                // Display the summary statistics
+                displaySummary(groupedData);
+
+                // Store ROI data for chart rendering
+                rois = jsonData;
+                createCharts();
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function groupByLegendName(data) {
+            const groupedData = {};
+
+            // Iterate over each row of data (excluding headers)
+            for (let i = 1; i < data.length; i++) {
+                const legendName = data[i][0]; // Assuming legend name is in the first column
+
+                // Remove the prefix ('S_' or 'IC_')
+                const baseName = legendName.replace(/^S_|^IC_/, '');
+
+                // Check if this base name exists in groupedData, create if not
+                if (!groupedData[baseName]) {
+                    groupedData[baseName] = [];
+                }
+
+                // Push the entire row data into the corresponding group
+                groupedData[baseName].push(data[i]);
+            }
+
+            return groupedData;
+        }
+
+        function displayData(data) {
+            const outputDiv = document.getElementById('output');
+            const table = document.createElement('table');
+            const headerRow = table.createTHead().insertRow();
+
+            // Create table headers
+            const headers = data[0];
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+
+            // Create table rows
+            for (let i = 1; i < data.length; i++) {
+                const rowData = data[i];
+                const row = table.insertRow();
+                rowData.forEach(cellData => {
+                    const cell = row.insertCell();
+                    cell.textContent = cellData;
+                });
+                // Add background color based on legend color (2nd column)
+                row.style.backgroundColor = getColorByName(rowData[0], rowData[1]);
+            }
+
+            outputDiv.innerHTML = '';
+            outputDiv.appendChild(table);
+        }
+
+        function displayGroupedData(groupedData) {
+            const analysisDiv = document.getElementById('analysis');
+            analysisDiv.innerHTML = '';
+
+            for (let key in groupedData) {
+                if (groupedData.hasOwnProperty(key)) {
+                    // Extracting the letter or identifier from the key
+                    const groupName = key.replace(/^Group /, ''); // Remove 'Group ' prefix
+
+                    const groupHeader = document.createElement('h3');
+                    groupHeader.textContent = groupName;
+
+                    let lawngreenCount = 0;
+                    let cornflowerblueCount = 0;
+                    let hasS_Lawngreen = false;
+                    let hasIC_Cornflowerblue = false;
+                    let hasS_Cornflowerblue = false;
+                    let hasIC_Lawngreen = false;
+
+                    groupedData[key].forEach(rowData => {
+                        rowData.forEach((cellData, index) => {
+                            if (index === 1) {
+                                if (cellData.toLowerCase() === 'lawngreen') {
+                                    lawngreenCount++;
+                                } else if (cellData.toLowerCase() === 'cornflowerblue') {
+                                    cornflowerblueCount++;
+                                }
+                            }
+                            if (rowData[0].startsWith('S_') && cellData.toLowerCase() === 'lawngreen') {
+                                hasS_Lawngreen = true;
+                            } else if (rowData[0].startsWith('IC_') && cellData.toLowerCase() === 'cornflowerblue') {
+                                hasIC_Cornflowerblue = true;
+                            } else if (rowData[0].startsWith('S_') && cellData.toLowerCase() === 'cornflowerblue') {
+                                hasS_Cornflowerblue = true;
+                            } else if (rowData[0].startsWith('IC_') && cellData.toLowerCase() === 'lawngreen') {
+                                hasIC_Lawngreen = true;
+                            }
+                        });
+                    });
+
+                    if (lawngreenCount === 2) {
+                        groupHeader.classList.add('positive');
+                        groupHeader.textContent += ' - Positive';
+                    }
+
+                    if (cornflowerblueCount > 0 && lawngreenCount === 0) {
+                        groupHeader.classList.add('invalid');
+                        groupHeader.textContent += ' - test Invalid';
+                    }
+
+                    if (hasS_Lawngreen && hasIC_Cornflowerblue) {
+                        groupHeader.classList.add('positive');
+                        groupHeader.textContent += ' - Positive';
+                    }
+
+                    if (hasS_Cornflowerblue && hasIC_Lawngreen) {
+                        groupHeader.classList.add('negative');
+                        groupHeader.textContent += ' - Negative';
+                    }
+
+                    analysisDiv.appendChild(groupHeader);
+                }
+            }
+        }
+
+        function displaySummary(groupedData) {
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = '';
+
+            // Example summary logic (customize based on your needs)
+            let totalLawngreen = 0;
+            let totalCornflowerblue = 0;
+
+            for (let key in groupedData) {
+                if (groupedData.hasOwnProperty(key)) {
+                    groupedData[key].forEach(rowData => {
+                        rowData.forEach((cellData, index) => {
+                            if (index === 1) {
+                                if (cellData.toLowerCase() === 'lawngreen') {
+                                    totalLawngreen++;
+                                } else if (cellData.toLowerCase() === 'cornflowerblue') {
+                                    totalCornflowerblue++;
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+
+        }
+
+        function createCharts() {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = ''; // Clear previous charts
+
+            // Group datasets by legend name (S_1, IC_1, S_2, IC_2, etc.)
+            const groupedDatasets = groupDatasetsByLegendName();
+
+            // Set fixed dimensions for the canvas
+            const canvasWidth = 600; // Set desired width (e.g., 600 pixels)
+            const canvasHeight = 400; // Set desired height (e.g., 400 pixels)
+
+            // Iterate over each legend name and create a chart
+            Object.keys(groupedDatasets).forEach(legendName => {
+                if (!legendName.startsWith('S_')) return;
+
+                const correspondingICLegend = legendName.replace('S_', 'IC_');
+                if (!groupedDatasets[correspondingICLegend]) return;
+
+                const datasetsS = groupedDatasets[legendName][0];
+                const datasetsIC = groupedDatasets[correspondingICLegend][0];
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasWidth; // Set canvas width
+                canvas.height = canvasHeight; // Set canvas height
+                chartContainer.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: datasetsS.timeLabels,
+                        datasets: [
+                            {
+                                label: legendName,
+                                data: datasetsS.intensityData.map(val => parseFloat(val)),
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderWidth: 2,
+                                pointRadius: 4,
+                                pointBackgroundColor: 'white',
+                                tension: 0.1
+                            },
+                            {
+                                label: correspondingICLegend,
+                                data: datasetsIC.intensityData.map(val => parseFloat(val)),
+                                borderColor: 'rgb(54, 162, 235)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderWidth: 2,
+                                pointRadius: 4,
+                                pointBackgroundColor: 'white',
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: false, // Ensure chart does not resize
+                        plugins: {
+                            legend: { display: true, position: 'top' }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Time' } },
+                            y: { title: { display: true, text: 'Intensity' }, suggestedMin: 0, suggestedMax: 100 }
+                        }
+                    }
+                });
+            });
+        }
+
+
+
+
+
+
+
+
+        function groupDatasetsByLegendName() {
+            const groupedDatasets = {};
+
+            // Iterate over rois data and group by legend name (S_1, IC_1, S_2, IC_2, etc.)
+            for (let i = 1; i < rois.length; i += 3) {
+                const legendName = rois[i][0]; // Legend name (e.g., S_1, IC_1)
+
+                // Intensity data is in the next row (i + 1) starting from the 4th column
+                const intensityData = rois[i + 1].slice(3);
+
+                // Time labels are in the row after intensity data (i + 2) starting from the 4th column
+                const timeLabels = rois[i + 2].slice(3);
+
+                // Group datasets by legend name
+                if (!groupedDatasets[legendName]) {
+                    groupedDatasets[legendName] = [];
+                }
+
+                groupedDatasets[legendName].push({
+                    intensityData: intensityData,
+                    timeLabels: timeLabels
+                });
+            }
+
+            return groupedDatasets;
+        }
+
+
+        function getRandomColor() {
+            // Function to generate random colors for chart lines
+            return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+        }
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [['ROI Name', 'Time', 'Intensity']];
+
+            rois.forEach((roi, index) => {
+                roi.forEach((row, rowIndex) => {
+                    if (rowIndex === 0) return; // Skip header row
+                    wsData.push([`ROI ${index + 1}`, row[1], row[2]]);
+                });
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Legend Data');
+
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+            const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'legend_data.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function getColorByName(name, color) {
+            // Modify this function based on your specific legend naming convention
+            if (name.startsWith('S_')) {
+                return 'lawngreen';
+            } else if (name.startsWith('IC_')) {
+                return 'cornflowerblue';
+            }
+            // Default color if no match (this should be customized based on your data)
+            return 'white';
+        }
+
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+    </script>
+</body>
+
+</html>
