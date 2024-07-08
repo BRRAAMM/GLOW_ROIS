@@ -224,15 +224,30 @@
 
                 // Create table header
                 const headerRow = document.createElement('tr');
+
+                // Index header
                 const headerCellIndex = document.createElement('th');
                 headerCellIndex.textContent = 'Index';
                 headerRow.appendChild(headerCellIndex);
+
+                // ROI Name header
                 const headerCellName = document.createElement('th');
                 headerCellName.textContent = 'ROI Name';
                 headerRow.appendChild(headerCellName);
+
+                // Age header
+                const headerCellAge = document.createElement('th');
+                headerCellAge.textContent = 'Age';
+                headerRow.appendChild(headerCellAge);
+
+                // Sex header
+                const headerCellSex = document.createElement('th');
+                headerCellSex.textContent = 'Sex';
+                headerRow.appendChild(headerCellSex);
+
                 table.appendChild(headerRow);
 
-                // Populate table rows with ROI names
+                // Populate table rows with ROI names, age, and sex
                 for (let i = 0; i < rois.length; i++) {
                     const roi = rois[i];
                     const row = document.createElement('tr');
@@ -253,6 +268,32 @@
                     nameCell.appendChild(nameInput);
                     row.appendChild(nameCell);
 
+                    // Age input cell
+                    const ageCell = document.createElement('td');
+                    const ageInput = document.createElement('input');
+                    ageInput.type = 'number';
+                    ageInput.value = roi[5] || '';
+                    ageInput.addEventListener('input', (event) => {
+                        rois[i][5] = event.target.value; // Update rois array on input change
+                    });
+                    ageCell.appendChild(ageInput);
+                    row.appendChild(ageCell);
+
+                    // Sex input cell
+                    const sexCell = document.createElement('td');
+                    const sexInput = document.createElement('select');
+                    sexInput.innerHTML = `
+            <option value="male" ${roi[6] === 'male' ? 'selected' : ''}>Male</option>
+            <option value="female" ${roi[6] === 'female' ? 'selected' : ''}>Female</option>
+            <option value="other" ${roi[6] === 'other' ? 'selected' : ''}>Other</option>
+        `;
+                    sexInput.addEventListener('change', (event) => {
+                        rois[i][6] = event.target.value; // Update rois array on select change
+                        console.log('Sex changed:', rois[i][6]); // Debugging point
+                    });
+                    sexCell.appendChild(sexInput);
+                    row.appendChild(sexCell);
+
                     table.appendChild(row);
                 }
 
@@ -264,10 +305,12 @@
                 updateButton.textContent = 'Update Names';
                 updateButton.addEventListener('click', () => {
                     // Optionally perform any actions upon updating names
-                    console.log('ROI names updated:', rois);
+                    console.log('ROI names updated:', rois); // Debugging point
                 });
                 roiTableContainer.appendChild(updateButton);
             }
+
+
 
 
             function createRoi(event) {
@@ -588,7 +631,7 @@
                     }
 
                     // Push legend details into legendData array
-                    legendData.push([roiName, legendColor]);
+                    legendData.push([roiName, legendColor, rois[j][5], rois[j][6]]); // Include age (index 5) and sex (index 6)
 
                     // Initialize arrays to store intensity and time data for current ROI
                     const intensities = [];
@@ -612,24 +655,26 @@
 
                 // Add worksheet for legend data
                 const wsData = [];
-                const headerRow = ['Legend Name', 'Legend Color', 'Data']; // Updated header row with 'Data' column
+                const headerRow = ['Legend Name', 'Legend Color', 'Age', 'Sex', 'Data']; // Updated header row with 'Age' and 'Sex'
                 wsData.push(headerRow);
 
                 // Add legend data rows
                 for (let j = 0; j < legendData.length; j++) {
                     const roiName = legendData[j][0];
                     const legendColor = legendData[j][1];
+                    const age = legendData[j][2];
+                    const sex = legendData[j][3];
 
                     // Add legend data row
-                    const legendDataRow = [roiName, legendColor, '']; // Empty cell in 'Data' column
+                    const legendDataRow = [roiName, legendColor, age, sex, '']; // Empty cell in 'Data' column
                     wsData.push(legendDataRow);
 
                     // Add intensity data row under 'Data'
-                    const intensityDataRow = ['', '', 'Intensity', ...legendIntensityData[j]];
+                    const intensityDataRow = ['', '', '', '', 'Intensity', ...legendIntensityData[j]];
                     wsData.push(intensityDataRow);
 
                     // Add time data row under 'Data'
-                    const timeDataRow = ['', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
+                    const timeDataRow = ['', '', '', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
                     wsData.push(timeDataRow);
                 }
 
