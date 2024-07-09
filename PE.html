@@ -4,10 +4,100 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROI Color Capture</title>
+    <title>RGLOW</title>
     <style>
         canvas {
-            border: 1px solid black;
+            border: 2px solid black;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
+
+        .legend-container {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background-color: #1e1e1e;
+        }
+
+        .graph-container {
+            position: relative;
+            background-color: #e9e9e9;
+            width: 600px;
+            height: 600px;
+        }
+
+        .controls-container {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .controls-container img {
+            margin: 0 10px;
+            height: 24px;
+            width: auto;
+        }
+
+        .controls-container input[type="range"] {
+            margin: 0 10px;
+        }
+
+        .button-container {
+            margin-top: 10px;
+        }
+
+        button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #c69dff;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #312760;
+        }
+
+        #roiTableContainer {
+            max-width: 60%;
+            max-height: 150px;
+            /* Set maximum height for the container */
+            overflow-y: auto;
+            /* Enable vertical scrolling if content exceeds max height */
+        }
+
+        .scroll-table {
+            width: 100%;
+            /* Ensure the table fills its container */
+            border-collapse: collapse;
+        }
+
+        .scroll-table th,
+        .scroll-table td {
+            border: 1px solid #8188c6;
+            background-color: #f1ffe4;
+            /* Add borders to table cells for clarity */
+            padding: 8px;
+            /* Padding inside cells */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .scroll-table th {
+            background-color: #cbd3ff;
+            /* Gray background for table headers */
         }
     </style>
 </head>
@@ -20,699 +110,709 @@
         <!-- Table for ROI Names will be dynamically inserted here -->
     </div>
 
-    <div style="width: 1358px;"> <canvas id="canvas" width="800" height="600"></canvas>
-        <div id="legendContainer">
-            <canvas id="legendCanvas" width="900" height="300"></canvas>
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="canvas" width="800" height="600"></canvas>
         </div>
-        <canvas id="graphCanvas" width="600" height="600"></canvas> <button id="assignNamesButton" role="button">Assign
-            Sample Names</button> <button id="exitButton">Exit</button> <button id="saveLegendButton">Raw result
-            data</button>
-
-        <button id="saveButton">.csv<img src="icon/description_FILL0_wght400_GRAD0_opsz24.svg"></button>
-        <button id="saveGraphPNGButton">Graph<img src="icon/show_chart_FILL0_wght400_GRAD0_opsz24.svg"></button>
-        <button id="toggleCameraButton">switch cam<img src="icon/cameraswitch_FILL0_wght400_GRAD0_opsz24.svg"></button>
+        <div class="legend-container">
+            <canvas id="legendCanvas" width="300" height="600"></canvas>
+        </div>
+        <div class="graph-container">
+            <canvas id="graphCanvas" width="600" height="600"></canvas>
+        </div>
     </div>
-    <div style="width: 1115px; margin-left: 243px;"><img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom<input
-            id="zoomRange" min="0" max="10" step="1" value="0" type="range"><img
-            src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus<input id="focusRange" min="0" max="100" step="1"
-            value="0" type="range"><img src="icon/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg">
-        Brightness<input id="brightnessRange" min="0" max="200" step="1" value="100" type="range"><img
-            src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast<input id="contrastRange" min="0" max="200"
-            step="1" value="100" type="range"><img src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation<input
-            id="saturationRange" min="0" max="200" step="1" value="100" type="range">
-        <script>
 
-            let isFrontCamera = false;
-            let stream = null;
-            let rois = [];
-            let roiData = [];
-            let timeIntervals = [];
-            let cap = null;
-            let recordingActive = false;
-            let frame = null;
-            let zoomValue = 10;
-            let focusValue = 10;
-            let brightnessValue = 100;
-            let contrastValue = 100;
-            let saturationValue = 100;
-            const MAX_DATA_POINTS = 100000000000000000000;
-            const colors = ['cornflowerblue']; // Define an array of colors
+    <div class="controls-container">
+        <img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom
+        <input id="zoomRange" min="0" max="10" step="1" value="0" type="range">
+        <img src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus
+        <input id="focusRange" min="0" max="100" step="1" value="0" type="range">
+        <img src="icon/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg">Brightness
+        <input id="brightnessRange" min="0" max="200" step="1" value="100" type="range">
+        <img src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast
+        <input id="contrastRange" min="0" max="200" step="1" value="100" type="range">
+        <img src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation
+        <input id="saturationRange" min="0" max="200" step="1" value="100" type="range">
+    </div>
+
+    <div class="button-container">
+        <button id="assignNamesButton">Enter Sample ID</button>
+        <button id="saveLegendButton">Raw result data</button>
+        <button id="saveGraphPNGButton">Graph</button>
+        <button id="saveButton">Excel</button>
+        <button id="toggleCameraButton">Switch cam</button>
+        <button id="exitButton">Exit</button>
+
+    </div>
+    <script>
+
+        let isFrontCamera = false;
+        let stream = null;
+        let rois = [];
+        let roiData = [];
+        let timeIntervals = [];
+        let cap = null;
+        let recordingActive = false;
+        let frame = null;
+        let zoomValue = 10;
+        let focusValue = 10;
+        let brightnessValue = 100;
+        let contrastValue = 100;
+        let saturationValue = 100;
+        const MAX_DATA_POINTS = 100000000000000000000;
+        const colors = ['cornflowerblue']; // Define an array of colors
 
 
-            // Request camera permission when the page loads
-            document.addEventListener('DOMContentLoaded', function () {
-                toggleCameraButton.addEventListener('click', toggleCamera);
-                zoomRange.addEventListener('input', updateZoom);
-                focusRange.addEventListener('input', updateFocus);
-                brightnessRange.addEventListener('input', updateBrightness);
-                contrastRange.addEventListener('input', updateContrast);
-                saturationRange.addEventListener('input', updateSaturation);
-                requestCameraPermission();
-            });
+        // Request camera permission when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleCameraButton.addEventListener('click', toggleCamera);
+            zoomRange.addEventListener('input', updateZoom);
+            focusRange.addEventListener('input', updateFocus);
+            brightnessRange.addEventListener('input', updateBrightness);
+            contrastRange.addEventListener('input', updateContrast);
+            saturationRange.addEventListener('input', updateSaturation);
+            requestCameraPermission();
+        });
 
-            function requestCameraPermission() {
-                const constraints = {
-                    video: {
-                        facingMode: isFrontCamera ? "user" : "environment",
+        function requestCameraPermission() {
+            const constraints = {
+                video: {
+                    facingMode: isFrontCamera ? "user" : "environment",
+                    zoom: zoomValue,
+                    focusDistance: focusValue,
+                    brightness: brightnessValue,
+                    contrast: contrastValue,
+                    saturation: saturationValue
+                }
+            };
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function (s) {
+                        stream = s;
+                        initializeCamera();
+                    })
+                    .catch(function (err) {
+                        console.error('Error accessing camera:', err);
+                        alert('Error accessing camera. Please grant camera permission to run this application.');
+                    });
+            } else {
+                console.error('getUserMedia is not supported on your browser');
+                alert('Camera access is not supported on your browser.');
+            }
+        }
+
+        function toggleCamera() {
+            isFrontCamera = !isFrontCamera;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            requestCameraPermission();
+        }
+
+        function initializeCamera() {
+            cap = document.createElement('video');
+            cap.srcObject = stream;
+            cap.play(); // Start video playback
+            cap.onloadedmetadata = function () {
+                startRecording(); // Start recording automatically
+                updateFeed(); // Start updating feed
+                updateRealtimeGraph(); // Start updating graph
+            };
+        }
+
+        function getFrame() {
+            if (cap && cap.readyState === cap.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                canvas.width = cap.videoWidth;
+                canvas.height = cap.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(cap, 0, 0, cap.videoWidth, cap.videoHeight);
+                return canvas.toDataURL('image/jpeg');
+            }
+            return null;
+        }
+
+        function updateFeed() {
+            if (recordingActive) {
+                frame = getFrame();
+                if (frame) {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = function () {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        for (let i = 0; i < rois.length; i++) {
+                            const roi = rois[i];
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(roi[0], roi[1], roi[2] - roi[0], roi[3] - roi[1]);
+                            const labelX = (roi[0] + roi[2]) / 2;
+                            const labelY = (roi[1] + roi[3]) / 2;
+                            const labelText = `${roi[4]}`;
+                            ctx.fillStyle = 'white';
+                            ctx.font = '12px Arial';
+                            ctx.fillText(labelText, labelX, labelY);
+                        }
+                    };
+                    img.src = frame;
+                }
+            }
+            requestAnimationFrame(updateFeed);
+        }
+
+        function startRecording() {
+            recordingActive = true;
+            setInterval(saveRoiColors, 1 * 1 * 1000); // Save ROI colors automatically every second
+        }
+
+        function updateZoom() {
+            zoomValue = parseFloat(zoomRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateFocus() {
+            focusValue = parseFloat(focusRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateBrightness() {
+            brightnessValue = parseFloat(brightnessRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateContrast() {
+            contrastValue = parseFloat(contrastRange.value);
+            applyCameraConstraints();
+        }
+
+        function updateSaturation() {
+            saturationValue = parseFloat(saturationRange.value);
+            applyCameraConstraints();
+        }
+
+        function applyCameraConstraints() {
+            if (stream) {
+                const tracks = stream.getVideoTracks();
+                if (tracks.length > 0) {
+                    const settings = tracks[0].getSettings();
+                    const capabilities = tracks[0].getCapabilities();
+                    const constraints = {
                         zoom: zoomValue,
                         focusDistance: focusValue,
                         brightness: brightnessValue,
                         contrast: contrastValue,
                         saturation: saturationValue
-                    }
-                };
-
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia(constraints)
-                        .then(function (s) {
-                            stream = s;
-                            initializeCamera();
-                        })
-                        .catch(function (err) {
-                            console.error('Error accessing camera:', err);
-                            alert('Error accessing camera. Please grant camera permission to run this application.');
-                        });
-                } else {
-                    console.error('getUserMedia is not supported on your browser');
-                    alert('Camera access is not supported on your browser.');
-                }
-            }
-
-            function toggleCamera() {
-                isFrontCamera = !isFrontCamera;
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
-                requestCameraPermission();
-            }
-
-            function initializeCamera() {
-                cap = document.createElement('video');
-                cap.srcObject = stream;
-                cap.play(); // Start video playback
-                cap.onloadedmetadata = function () {
-                    startRecording(); // Start recording automatically
-                    updateFeed(); // Start updating feed
-                    updateRealtimeGraph(); // Start updating graph
-                };
-            }
-
-            function getFrame() {
-                if (cap && cap.readyState === cap.HAVE_ENOUGH_DATA) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = cap.videoWidth;
-                    canvas.height = cap.videoHeight;
-                    const context = canvas.getContext('2d');
-                    context.drawImage(cap, 0, 0, cap.videoWidth, cap.videoHeight);
-                    return canvas.toDataURL('image/jpeg');
-                }
-                return null;
-            }
-
-            function updateFeed() {
-                if (recordingActive) {
-                    frame = getFrame();
-                    if (frame) {
-                        const canvas = document.getElementById('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const img = new Image();
-                        img.onload = function () {
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            for (let i = 0; i < rois.length; i++) {
-                                const roi = rois[i];
-                                ctx.strokeStyle = 'red';
-                                ctx.lineWidth = 1;
-                                ctx.strokeRect(roi[0], roi[1], roi[2] - roi[0], roi[3] - roi[1]);
-                                const labelX = (roi[0] + roi[2]) / 2;
-                                const labelY = (roi[1] + roi[3]) / 2;
-                                const labelText = `${roi[4]}`;
-                                ctx.fillStyle = 'white';
-                                ctx.font = '12px Arial';
-                                ctx.fillText(labelText, labelX, labelY);
-                            }
-                        };
-                        img.src = frame;
-                    }
-                }
-                requestAnimationFrame(updateFeed);
-            }
-
-            function startRecording() {
-                recordingActive = true;
-                setInterval(saveRoiColors, 1 * 1 * 1000); // Save ROI colors automatically every second
-            }
-
-            function updateZoom() {
-                zoomValue = parseFloat(zoomRange.value);
-                applyCameraConstraints();
-            }
-
-            function updateFocus() {
-                focusValue = parseFloat(focusRange.value);
-                applyCameraConstraints();
-            }
-
-            function updateBrightness() {
-                brightnessValue = parseFloat(brightnessRange.value);
-                applyCameraConstraints();
-            }
-
-            function updateContrast() {
-                contrastValue = parseFloat(contrastRange.value);
-                applyCameraConstraints();
-            }
-
-            function updateSaturation() {
-                saturationValue = parseFloat(saturationRange.value);
-                applyCameraConstraints();
-            }
-
-            function applyCameraConstraints() {
-                if (stream) {
-                    const tracks = stream.getVideoTracks();
-                    if (tracks.length > 0) {
-                        const settings = tracks[0].getSettings();
-                        const capabilities = tracks[0].getCapabilities();
-                        const constraints = {
-                            zoom: zoomValue,
-                            focusDistance: focusValue,
-                            brightness: brightnessValue,
-                            contrast: contrastValue,
-                            saturation: saturationValue
-                        };
-                        // Check if constraints are supported by the browser and the device
-                        if ('applyConstraints' in tracks[0] && typeof tracks[0].applyConstraints === 'function') {
-                            tracks[0].applyConstraints(constraints)
-                                .then(() => {
-                                    console.log('Camera constraints applied successfully.');
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to apply camera constraints:', error);
-                                });
-                        } else {
-                            console.warn('Camera constraints are not supported.');
-                        }
+                    };
+                    // Check if constraints are supported by the browser and the device
+                    if ('applyConstraints' in tracks[0] && typeof tracks[0].applyConstraints === 'function') {
+                        tracks[0].applyConstraints(constraints)
+                            .then(() => {
+                                console.log('Camera constraints applied successfully.');
+                            })
+                            .catch((error) => {
+                                console.error('Failed to apply camera constraints:', error);
+                            });
+                    } else {
+                        console.warn('Camera constraints are not supported.');
                     }
                 }
             }
+        }
 
-            function assignRoiNames() {
-                const roiTableContainer = document.getElementById('roiTableContainer');
-                roiTableContainer.innerHTML = ''; // Clear previous content
+        function assignRoiNames() {
+            const roiTableContainer = document.getElementById('roiTableContainer');
+            roiTableContainer.innerHTML = ''; // Clear previous content
 
-                const table = document.createElement('table');
+            const table = document.createElement('table');
+            table.classList.add('scroll-table'); // Add a class for styling
 
-                // Create table header
-                const headerRow = document.createElement('tr');
+            // Create table header
+            const headerRow = document.createElement('tr');
 
-                // Index header
-                const headerCellIndex = document.createElement('th');
-                headerCellIndex.textContent = 'Index';
-                headerRow.appendChild(headerCellIndex);
+            // Index header
+            const headerCellIndex = document.createElement('th');
+            headerCellIndex.textContent = 'S/N';
+            headerRow.appendChild(headerCellIndex);
 
-                // ROI Name header
-                const headerCellName = document.createElement('th');
-                headerCellName.textContent = 'ROI Name';
-                headerRow.appendChild(headerCellName);
+            // ROI Name header
+            const headerCellName = document.createElement('th');
+            headerCellName.textContent = 'Sample ID';
+            headerRow.appendChild(headerCellName);
 
-                // Age header
-                const headerCellAge = document.createElement('th');
-                headerCellAge.textContent = 'Age';
-                headerRow.appendChild(headerCellAge);
+            // Age header
+            const headerCellAge = document.createElement('th');
+            headerCellAge.textContent = 'Age';
+            headerRow.appendChild(headerCellAge);
 
-                // Sex header
-                const headerCellSex = document.createElement('th');
-                headerCellSex.textContent = 'Sex';
-                headerRow.appendChild(headerCellSex);
+            // Sex header
+            const headerCellSex = document.createElement('th');
+            headerCellSex.textContent = 'Gender';
+            headerRow.appendChild(headerCellSex);
 
-                table.appendChild(headerRow);
+            table.appendChild(headerRow);
 
-                // Populate table rows with ROI names, age, and sex
-                for (let i = 0; i < rois.length; i++) {
-                    const roi = rois[i];
-                    const row = document.createElement('tr');
+            // Populate table rows with ROI names, age, and sex
+            for (let i = 0; i < rois.length; i++) {
+                const roi = rois[i];
+                const row = document.createElement('tr');
 
-                    // Index cell
-                    const indexCell = document.createElement('td');
-                    indexCell.textContent = i + 1;
-                    row.appendChild(indexCell);
+                // Index cell
+                const indexCell = document.createElement('td');
+                indexCell.textContent = i + 1;
+                row.appendChild(indexCell);
 
-                    // Name input cell
-                    const nameCell = document.createElement('td');
-                    const nameInput = document.createElement('input');
-                    nameInput.type = 'text';
-                    nameInput.value = roi[4] || `S_${i + 1}`; // Default to existing name or 'S_i'
-                    nameInput.addEventListener('input', (event) => {
-                        rois[i][4] = event.target.value; // Update rois array on input change
-                    });
-                    nameCell.appendChild(nameInput);
-                    row.appendChild(nameCell);
+                // Name input cell
+                const nameCell = document.createElement('td');
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.value = roi[4] || `S_${i + 1}`; // Default to existing name or 'S_i'
+                nameInput.addEventListener('input', (event) => {
+                    rois[i][4] = event.target.value; // Update rois array on input change
+                });
+                nameCell.appendChild(nameInput);
+                row.appendChild(nameCell);
 
-                    // Age input cell
-                    const ageCell = document.createElement('td');
-                    const ageInput = document.createElement('input');
-                    ageInput.type = 'number';
-                    ageInput.value = roi[5] || '';
-                    ageInput.addEventListener('input', (event) => {
-                        rois[i][5] = event.target.value; // Update rois array on input change
-                    });
-                    ageCell.appendChild(ageInput);
-                    row.appendChild(ageCell);
+                // Age input cell
+                const ageCell = document.createElement('td');
+                const ageInput = document.createElement('input');
+                ageInput.type = 'number';
+                ageInput.value = roi[5] || '';
+                ageInput.addEventListener('input', (event) => {
+                    rois[i][5] = event.target.value; // Update rois array on input change
+                });
+                ageCell.appendChild(ageInput);
+                row.appendChild(ageCell);
 
-                    // Sex input cell
-                    const sexCell = document.createElement('td');
-                    const sexInput = document.createElement('select');
-                    sexInput.innerHTML = `
+                // Sex input cell
+                const sexCell = document.createElement('td');
+                const sexInput = document.createElement('select');
+                sexInput.innerHTML = `
+            <option value="Select" ${roi[6] === 'Select' ? 'selected' : ''}></option>
             <option value="male" ${roi[6] === 'male' ? 'selected' : ''}>Male</option>
             <option value="female" ${roi[6] === 'female' ? 'selected' : ''}>Female</option>
             <option value="other" ${roi[6] === 'other' ? 'selected' : ''}>Other</option>
         `;
-                    sexInput.addEventListener('change', (event) => {
-                        rois[i][6] = event.target.value; // Update rois array on select change
-                        console.log('Sex changed:', rois[i][6]); // Debugging point
-                    });
-                    sexCell.appendChild(sexInput);
-                    row.appendChild(sexCell);
-
-                    table.appendChild(row);
-                }
-
-                // Append table to container
-                roiTableContainer.appendChild(table);
-
-                // Add a button to update the canvas or perform other actions if needed
-                const updateButton = document.createElement('button');
-                updateButton.textContent = 'Update Names';
-                updateButton.addEventListener('click', () => {
-                    // Optionally perform any actions upon updating names
-                    console.log('ROI names updated:', rois); // Debugging point
+                sexInput.addEventListener('change', (event) => {
+                    rois[i][6] = event.target.value; // Update rois array on select change
+                    console.log('Sex changed:', rois[i][6]); // Debugging point
                 });
-                roiTableContainer.appendChild(updateButton);
+                sexCell.appendChild(sexInput);
+                row.appendChild(sexCell);
+
+                table.appendChild(row);
             }
 
+            // Append table to container
+            roiTableContainer.appendChild(table);
+        }
 
 
 
-            function createRoi(event) {
-                const canvas = document.getElementById('canvas');
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-                const RECTANGLE_SIZE = 10;
-                const x1 = x - RECTANGLE_SIZE / 2;
-                const y1 = y - RECTANGLE_SIZE / 2;
-                const x2 = x1 + RECTANGLE_SIZE;
-                const y2 = y1 + RECTANGLE_SIZE;
-                rois.push([x1, y1, x2, y2, `S_${rois.length + 1}`]);
-                roiData.push([]);
+
+
+
+
+        function createRoi(event) {
+            const canvas = document.getElementById('canvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const RECTANGLE_SIZE = 10;
+            const x1 = x - RECTANGLE_SIZE / 2;
+            const y1 = y - RECTANGLE_SIZE / 2;
+            const x2 = x1 + RECTANGLE_SIZE;
+            const y2 = y1 + RECTANGLE_SIZE;
+            rois.push([x1, y1, x2, y2, `S_${rois.length + 1}`]);
+            roiData.push([]);
+        }
+
+        function getRoiColors(roi) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const roiImage = ctx.getImageData(roi[0], roi[1], roi[2] - roi[0], roi[3] - roi[1]);
+            const data = roiImage.data;
+            let sumR = 0, sumG = 0, sumB = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                sumR += data[i];
+                sumG += data[i + 1];
+                sumB += data[i + 2];
             }
+            const numPixels = (roi[2] - roi[0]) * (roi[3] - roi[1]);
+            return [sumR / numPixels, sumG / numPixels, sumB / numPixels];
+        }
 
-            function getRoiColors(roi) {
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                const roiImage = ctx.getImageData(roi[0], roi[1], roi[2] - roi[0], roi[3] - roi[1]);
-                const data = roiImage.data;
-                let sumR = 0, sumG = 0, sumB = 0;
-                for (let i = 0; i < data.length; i += 4) {
-                    sumR += data[i];
-                    sumG += data[i + 1];
-                    sumB += data[i + 2];
+        function saveRoiColors() {
+            const currentTime = Date.now();
+            timeIntervals.push(currentTime);
+            for (let i = 0; i < rois.length; i++) {
+                const meanColor = getRoiColors(rois[i]);
+                roiData[i].push(meanColor);
+            }
+        }
+
+        function saveRoiDataToCSV() {
+            let csvContent = "Time (min),";
+            for (let i = 0; i < rois.length; i++) {
+                csvContent += `ROI ${i + 1} Name,ROI ${i + 1} Intensity,`;
+            }
+            csvContent += "\n";
+
+            let maxDataPoints = 0;
+            for (let i = 0; i < roiData.length; i++) {
+                if (roiData[i].length > maxDataPoints) {
+                    maxDataPoints = roiData[i].length;
                 }
-                const numPixels = (roi[2] - roi[0]) * (roi[3] - roi[1]);
-                return [sumR / numPixels, sumG / numPixels, sumB / numPixels];
             }
 
-            function saveRoiColors() {
-                const currentTime = Date.now();
-                timeIntervals.push(currentTime);
-                for (let i = 0; i < rois.length; i++) {
-                    const meanColor = getRoiColors(rois[i]);
-                    roiData[i].push(meanColor);
-                }
-            }
+            for (let j = 0; j < maxDataPoints; j++) {
+                const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
+                csvContent += `${time.toFixed(2)},`;
 
-            function saveRoiDataToCSV() {
-                let csvContent = "Time (min),";
                 for (let i = 0; i < rois.length; i++) {
-                    csvContent += `ROI ${i + 1} Name,ROI ${i + 1} Intensity,`;
+                    if (j < roiData[i].length) {
+                        const roiMeanColor = roiData[i][j];
+                        const intensity = roiMeanColor[1];
+                        csvContent += `${rois[i][4]},${intensity},`;
+                    } else {
+                        // If no data available for this time point in the ROI, fill with empty value
+                        csvContent += ",,";
+                    }
                 }
                 csvContent += "\n";
-
-                let maxDataPoints = 0;
-                for (let i = 0; i < roiData.length; i++) {
-                    if (roiData[i].length > maxDataPoints) {
-                        maxDataPoints = roiData[i].length;
-                    }
-                }
-
-                for (let j = 0; j < maxDataPoints; j++) {
-                    const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
-                    csvContent += `${time.toFixed(2)},`;
-
-                    for (let i = 0; i < rois.length; i++) {
-                        if (j < roiData[i].length) {
-                            const roiMeanColor = roiData[i][j];
-                            const intensity = roiMeanColor[1];
-                            csvContent += `${rois[i][4]},${intensity},`;
-                        } else {
-                            // If no data available for this time point in the ROI, fill with empty value
-                            csvContent += ",,";
-                        }
-                    }
-                    csvContent += "\n";
-                }
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'roi_data.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
             }
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'roi_data.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
-            function saveGraphAsPNG() {
-                const canvas = document.getElementById('graphCanvas');
-                const link = document.createElement('a');
-                link.download = 'graph.png';
-                link.href = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
-                link.click();
+        function saveGraphAsPNG() {
+            const canvas = document.getElementById('graphCanvas');
+            const link = document.createElement('a');
+            link.download = 'graph.png';
+            link.href = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
+            link.click();
+        }
+        function saveRoiDataToExcel() {
+            const wb = XLSX.utils.book_new(); // Create a new workbook
+
+            // Add worksheet for ROI data
+            const wsData = [];
+
+            // Add header row
+            const headerRow = ["Time (min)"];
+            for (let i = 0; i < rois.length; i++) {
+                headerRow.push(`ROI ${i + 1} Name`);
+                headerRow.push(`ROI ${i + 1} Intensity`);
             }
-            function saveRoiDataToExcel() {
-                const wb = XLSX.utils.book_new(); // Create a new workbook
+            wsData.push(headerRow);
 
-                // Add worksheet for ROI data
-                const wsData = [];
-
-                // Add header row
-                const headerRow = ["Time (min)"];
+            // Add data rows
+            for (let j = 0; j < timeIntervals.length; j++) {
+                const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
+                const rowData = [time.toFixed(2)];
                 for (let i = 0; i < rois.length; i++) {
-                    headerRow.push(`ROI ${i + 1} Name`);
-                    headerRow.push(`ROI ${i + 1} Intensity`);
-                }
-                wsData.push(headerRow);
-
-                // Add data rows
-                for (let j = 0; j < timeIntervals.length; j++) {
-                    const time = (timeIntervals[j] - timeIntervals[0]) / 60000; // Convert to minutes
-                    const rowData = [time.toFixed(2)];
-                    for (let i = 0; i < rois.length; i++) {
-                        if (j < roiData[i].length) {
-                            const intensity = roiData[i][j][1];
-                            rowData.push(rois[i][4]);
-                            rowData.push(intensity);
-                        } else {
-                            rowData.push("");
-                            rowData.push("");
-                        }
+                    if (j < roiData[i].length) {
+                        const intensity = roiData[i][j][1];
+                        rowData.push(rois[i][4]);
+                        rowData.push(intensity);
+                    } else {
+                        rowData.push("");
+                        rowData.push("");
                     }
-                    wsData.push(rowData);
                 }
-
-                // Convert data to worksheet
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-                // Add worksheet to workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'ROI Data');
-
-                // Save workbook to Excel file
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], { type: 'application/octet-stream' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'roi_data.xlsx');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                wsData.push(rowData);
             }
 
-            function updateRealtimeGraph() {
-                if (roiData.length > 0) {
-                    const canvas = document.getElementById('graphCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Convert data to worksheet
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                    // Draw X-axis
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'ROI Data');
+
+            // Save workbook to Excel file
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'roi_data.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function updateRealtimeGraph() {
+            if (roiData.length > 0) {
+                const canvas = document.getElementById('graphCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw X-axis
+                ctx.beginPath();
+                ctx.moveTo(50, canvas.height - 40);
+                ctx.lineTo(canvas.width - 20, canvas.height - 40);
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Y-axis
+                ctx.beginPath();
+                ctx.moveTo(50, 20);
+                ctx.lineTo(50, canvas.height - 40);
+                ctx.stroke();
+
+                // Draw X-axis title
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('Time (minutes)', canvas.width / 2, canvas.height - 10);
+
+                // Draw Y-axis title
+                ctx.save();
+                ctx.translate(10, canvas.height / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillText('Fluorescent Intensity', 0, 0);
+                ctx.restore();
+
+                const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
+                const tickInterval = Math.ceil(maxTime / 12);
+
+                // Draw X-axis ticks and labels
+                for (let t = 0; t <= maxTime; t += tickInterval) {
+                    const x = 50 + (t / maxTime) * (canvas.width - 70);
                     ctx.beginPath();
-                    ctx.moveTo(50, canvas.height - 40);
-                    ctx.lineTo(canvas.width - 20, canvas.height - 40);
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 2;
+                    ctx.moveTo(x, canvas.height - 40);
+                    ctx.lineTo(x, canvas.height - 30);
                     ctx.stroke();
-
-                    // Draw Y-axis
-                    ctx.beginPath();
-                    ctx.moveTo(50, 20);
-                    ctx.lineTo(50, canvas.height - 40);
-                    ctx.stroke();
-
-                    // Draw X-axis title
                     ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.font = 'bold 10px Arial';
-                    ctx.fillText('Time (minutes)', canvas.width / 2, canvas.height - 10);
+                    // Convert time to minutes and display as label
+                    const minutes = Math.floor(t);
+                    const seconds = Math.round((t - minutes) * 60);
+                    ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
+                }
 
-                    // Draw Y-axis title
-                    ctx.save();
-                    ctx.translate(10, canvas.height / 2);
-                    ctx.rotate(-Math.PI / 2);
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Fluorescent Intensity', 0, 0);
-                    ctx.restore();
+                const maxIntensity = 300;
+                const intensityInterval = Math.ceil(maxIntensity / 60);
 
-                    const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
-                    const tickInterval = Math.ceil(maxTime / 12);
+                // Draw Y-axis ticks and labels
+                for (let i = 0; i <= maxIntensity; i += intensityInterval) {
+                    const y = canvas.height - 40 - (i / maxIntensity) * (canvas.height - 60);
+                    ctx.beginPath();
+                    ctx.moveTo(50, y);
+                    ctx.lineTo(60, y);
+                    ctx.stroke();
+                    ctx.fillText(`${i}`, 30, y + 5);
+                }
 
-                    // Draw X-axis ticks and labels
-                    for (let t = 0; t <= maxTime; t += tickInterval) {
-                        const x = 50 + (t / maxTime) * (canvas.width - 70);
-                        ctx.beginPath();
-                        ctx.moveTo(x, canvas.height - 40);
-                        ctx.lineTo(x, canvas.height - 30);
-                        ctx.stroke();
+                for (let i = 0; i < roiData.length; i++) {
+                    const data = roiData[i];
+                    const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
+                    const xValues = [];
+                    const yValues = [];
+                    for (let j = startIdx; j < data.length; j++) {
+                        const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
+                        xValues.push(timeInterval);
+                        yValues.push(data[j][1]);
+
+                        // Change graph color to green if y-value exceeds 50
+                        if (data[j][1] > 50) {
+                            ctx.strokeStyle = 'lawngreen';
+                        } else {
+                            ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
+                        }
+                    }
+
+                    // Draw the graph line
+                    ctx.beginPath();
+                    ctx.lineWidth = 2;
+                    const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
+                    const yIncrement = (canvas.height - 60) / maxIntensity;
+                    ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
+                    for (let j = 1; j < xValues.length; j++) {
+                        const x = 50 + xValues[j] * xIncrement;
+                        const y = canvas.height - 40 - yValues[j] * yIncrement;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+
+                    // Draw sample name at the end of the graph line
+                    const lastDataPointIndex = data.length - 1;
+                    if (lastDataPointIndex >= 0) {
+                        const x = 50 + xValues[lastDataPointIndex] * xIncrement;
+                        const y = canvas.height - 40 - yValues[lastDataPointIndex] * yIncrement;
                         ctx.fillStyle = 'black';
-                        // Convert time to minutes and display as label
-                        const minutes = Math.floor(t);
-                        const seconds = Math.round((t - minutes) * 60);
-                        ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
-                    }
-
-                    const maxIntensity = 300;
-                    const intensityInterval = Math.ceil(maxIntensity / 60);
-
-                    // Draw Y-axis ticks and labels
-                    for (let i = 0; i <= maxIntensity; i += intensityInterval) {
-                        const y = canvas.height - 40 - (i / maxIntensity) * (canvas.height - 60);
-                        ctx.beginPath();
-                        ctx.moveTo(50, y);
-                        ctx.lineTo(60, y);
-                        ctx.stroke();
-                        ctx.fillText(`${i}`, 30, y + 5);
-                    }
-
-                    for (let i = 0; i < roiData.length; i++) {
-                        const data = roiData[i];
-                        const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
-                        const xValues = [];
-                        const yValues = [];
-                        for (let j = startIdx; j < data.length; j++) {
-                            const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
-                            xValues.push(timeInterval);
-                            yValues.push(data[j][1]);
-
-                            // Change graph color to green if y-value exceeds 50
-                            if (data[j][1] > 50) {
-                                ctx.strokeStyle = 'lawngreen';
-                            } else {
-                                ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
-                            }
-                        }
-
-                        // Draw the graph line
-                        ctx.beginPath();
-                        ctx.lineWidth = 2;
-                        const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
-                        const yIncrement = (canvas.height - 60) / maxIntensity;
-                        ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
-                        for (let j = 1; j < xValues.length; j++) {
-                            const x = 50 + xValues[j] * xIncrement;
-                            const y = canvas.height - 40 - yValues[j] * yIncrement;
-                            ctx.lineTo(x, y);
-                        }
-                        ctx.stroke();
-
-                        // Draw sample name at the end of the graph line
-                        const lastDataPointIndex = data.length - 1;
-                        if (lastDataPointIndex >= 0) {
-                            const x = 50 + xValues[lastDataPointIndex] * xIncrement;
-                            const y = canvas.height - 40 - yValues[lastDataPointIndex] * yIncrement;
-                            ctx.fillStyle = 'black';
-                            ctx.fillText(rois[i][4], x + 5, y - 5); // Adjust the position as needed
-                        }
-                    }
-
-                    const legendCanvas = document.getElementById('legendCanvas');
-                    const legendCtx = legendCanvas.getContext('2d');
-                    legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
-
-
-                    // Draw legends
-                    legendCtx.fillStyle = 'black';
-                    legendCtx.font = '12px Arial';
-                    const legendBoxSize = 20;
-                    const legendSpacing = 5;
-                    const maxLegendsPerColumn = 10;
-                    const legendContainerWidth = legendCanvas.width;
-                    const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
-                    const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
-
-                    for (let col = 0; col < numColumns; col++) {
-                        for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
-                            const rowIndex = i % maxLegendsPerColumn;
-                            const legendX = col * columnWidth;
-                            const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
-
-                            // Change the fill style to match the graph color
-                            if (roiData[i] && roiData[i].length > 0) {
-                                const lastDataPoint = roiData[i][roiData[i].length - 1];
-                                if (lastDataPoint[1] > 50) {
-                                    // Draw legend box and text
-                                    legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
-                                    legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                    legendCtx.fillStyle = 'black';
-                                    legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-
-                                    // Display time point alongside ROI if intensity exceeds 50
-                                    const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 50);
-                                    if (timeIndex !== -1) {
-                                        const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (60 * 1000); // Convert to minutes
-                                        legendCtx.fillText(`(${timeInterval.toFixed(2)}m)`, legendX + 80, legendY + legendBoxSize / 2 + 5);
-                                    }
-                                } else {
-                                    legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
-                                    legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                    legendCtx.fillStyle = 'black';
-                                    legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-                                }
-                            } else {
-                                legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
-                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                legendCtx.fillStyle = 'black';
-                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-                            }
-                        }
+                        ctx.fillText(rois[i][4], x + 5, y - 5); // Adjust the position as needed
                     }
                 }
 
-                requestAnimationFrame(updateRealtimeGraph);
-            }
-
-            function saveLegendDataToExcel() {
                 const legendCanvas = document.getElementById('legendCanvas');
                 const legendCtx = legendCanvas.getContext('2d');
+                legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
 
-                // Prepare legend data
-                const legendData = [];
-                const legendIntensityData = []; // To store intensity rows for legends
-                const legendTimeData = [];      // To store time rows for legends
 
-                // Iterate through each ROI to extract intensity and time data
-                for (let j = 0; j < rois.length; j++) {
-                    const roiName = rois[j][4]; // ROI name (legend text)
-                    let legendColor = colors[j % colors.length]; // Default color from colors array
+                // Draw legends
+                legendCtx.fillStyle = 'white';
+                legendCtx.font = '12px Arial';
+                const legendBoxSize = 20;
+                const legendSpacing = 5;
+                const maxLegendsPerColumn = 20;
+                const legendContainerWidth = legendCanvas.width;
+                const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
+                const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
 
-                    // Check if ROI's green value exceeds 50
-                    if (roiData[j] && roiData[j].length > 0) {
-                        const lastDataPoint = roiData[j][roiData[j].length - 1];
-                        if (lastDataPoint[1] > 50) {
-                            legendColor = 'lawngreen'; // Set color to lawngreen if intensity exceeds 50
+                for (let col = 0; col < numColumns; col++) {
+                    for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
+                        const rowIndex = i % maxLegendsPerColumn;
+                        const legendX = col * columnWidth;
+                        const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
+
+                        // Change the fill style to match the graph color
+                        if (roiData[i] && roiData[i].length > 0) {
+                            const lastDataPoint = roiData[i][roiData[i].length - 1];
+                            if (lastDataPoint[1] > 50) {
+                                // Draw legend box and text
+                                legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
+                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                                legendCtx.fillStyle = 'white';
+                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+
+                                // Display time point alongside ROI if intensity exceeds 50
+                                // const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 50);
+                                // if (timeIndex !== -1) {
+                                //   const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (60 * 1000); // Convert to minutes
+                                //   legendCtx.fillText(`(${timeInterval.toFixed(2)}m)`, legendX + 80, legendY + legendBoxSize / 2 + 5);
+                                //  }
+                            } else {
+                                legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
+                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                                legendCtx.fillStyle = 'white';
+                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+                            }
+                        } else {
+                            legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
+                            legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                            legendCtx.fillStyle = 'white';
+                            legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
                         }
                     }
+                }
+            }
 
-                    // Push legend details into legendData array
-                    legendData.push([roiName, legendColor, rois[j][5], rois[j][6]]); // Include age (index 5) and sex (index 6)
+            requestAnimationFrame(updateRealtimeGraph);
+        }
 
-                    // Initialize arrays to store intensity and time data for current ROI
-                    const intensities = [];
-                    const times = [];
+        function saveLegendDataToExcel() {
+            const legendCanvas = document.getElementById('legendCanvas');
+            const legendCtx = legendCanvas.getContext('2d');
 
-                    // Extract intensity and time data for current ROI
-                    if (roiData[j] && roiData[j].length > 0) {
-                        for (let k = 0; k < roiData[j].length; k++) {
-                            intensities.push(roiData[j][k][1]); // Assuming intensity is stored in the second index of roiData
-                            times.push((timeIntervals[k] - timeIntervals[0]) / 60000); // Convert to minutes
-                        }
+            // Prepare legend data
+            const legendData = [];
+            const legendIntensityData = []; // To store intensity rows for legends
+            const legendTimeData = [];      // To store time rows for legends
+
+            // Iterate through each ROI to extract intensity and time data
+            for (let j = 0; j < rois.length; j++) {
+                const roiName = rois[j][4]; // ROI name (legend text)
+                let legendColor = colors[j % colors.length]; // Default color from colors array
+
+                // Check if ROI's green value exceeds 50
+                if (roiData[j] && roiData[j].length > 0) {
+                    const lastDataPoint = roiData[j][roiData[j].length - 1];
+                    if (lastDataPoint[1] > 50) {
+                        legendColor = 'lawngreen'; // Set color to lawngreen if intensity exceeds 50
                     }
-
-                    // Push intensities and times as rows for legend
-                    legendIntensityData.push(intensities);
-                    legendTimeData.push(times);
                 }
 
-                // Create a new workbook
-                const wb = XLSX.utils.book_new();
+                // Push legend details into legendData array
+                legendData.push([roiName, legendColor, rois[j][5], rois[j][6]]); // Include age (index 5) and sex (index 6)
 
-                // Add worksheet for legend data
-                const wsData = [];
-                const headerRow = ['Legend Name', 'Legend Color', 'Age', 'Sex', 'Data']; // Updated header row with 'Age' and 'Sex'
-                wsData.push(headerRow);
+                // Initialize arrays to store intensity and time data for current ROI
+                const intensities = [];
+                const times = [];
 
-                // Add legend data rows
-                for (let j = 0; j < legendData.length; j++) {
-                    const roiName = legendData[j][0];
-                    const legendColor = legendData[j][1];
-                    const age = legendData[j][2];
-                    const sex = legendData[j][3];
-
-                    // Add legend data row
-                    const legendDataRow = [roiName, legendColor, age, sex, '']; // Empty cell in 'Data' column
-                    wsData.push(legendDataRow);
-
-                    // Add intensity data row under 'Data'
-                    const intensityDataRow = ['', '', '', '', 'Intensity', ...legendIntensityData[j]];
-                    wsData.push(intensityDataRow);
-
-                    // Add time data row under 'Data'
-                    const timeDataRow = ['', '', '', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
-                    wsData.push(timeDataRow);
+                // Extract intensity and time data for current ROI
+                if (roiData[j] && roiData[j].length > 0) {
+                    for (let k = 0; k < roiData[j].length; k++) {
+                        intensities.push(roiData[j][k][1]); // Assuming intensity is stored in the second index of roiData
+                        times.push((timeIntervals[k] - timeIntervals[0]) / 60000); // Convert to minutes
+                    }
                 }
 
-                // Convert data to worksheet
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-                // Add worksheet to workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'Legend Data');
-
-                // Save workbook to Excel file
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], { type: 'application/octet-stream' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'legend_data.xlsx');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                // Push intensities and times as rows for legend
+                legendIntensityData.push(intensities);
+                legendTimeData.push(times);
             }
 
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
 
-            document.getElementById('assignNamesButton').addEventListener('click', assignRoiNames);
-            document.getElementById('canvas').addEventListener('click', createRoi);
-            document.getElementById('exitButton').addEventListener('click', () => { closeApp(); });
-            document.getElementById('saveButton').addEventListener('click', saveRoiDataToCSV);
-            document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
-            document.getElementById('saveButton').addEventListener('click', saveRoiDataToExcel);
-            document.getElementById('saveLegendButton').addEventListener('click', saveLegendDataToExcel);
+            // Add worksheet for legend data
+            const wsData = [];
+            const headerRow = ['Legend Name', 'Legend Color', 'Age', 'Gender', 'Data']; // Updated header row with 'Age' and 'Sex'
+            wsData.push(headerRow);
 
-            function closeApp() {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
-                window.close();
+            // Add legend data rows
+            for (let j = 0; j < legendData.length; j++) {
+                const roiName = legendData[j][0];
+                const legendColor = legendData[j][1];
+                const age = legendData[j][2];
+                const sex = legendData[j][3];
+
+                // Add legend data row
+                const legendDataRow = [roiName, legendColor, age, sex, '']; // Empty cell in 'Data' column
+                wsData.push(legendDataRow);
+
+                // Add intensity data row under 'Data'
+                const intensityDataRow = ['', '', '', '', 'Intensity', ...legendIntensityData[j]];
+                wsData.push(intensityDataRow);
+
+                // Add time data row under 'Data'
+                const timeDataRow = ['', '', '', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
+                wsData.push(timeDataRow);
             }
 
-        </script>
+            // Convert data to worksheet
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Legend Data');
+
+            // Save workbook to Excel file
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'legend_data.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
+        document.getElementById('assignNamesButton').addEventListener('click', assignRoiNames);
+        document.getElementById('canvas').addEventListener('click', createRoi);
+        document.getElementById('exitButton').addEventListener('click', () => { closeApp(); });
+        document.getElementById('saveButton').addEventListener('click', saveRoiDataToCSV);
+        document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
+        document.getElementById('saveButton').addEventListener('click', saveRoiDataToExcel);
+        document.getElementById('saveLegendButton').addEventListener('click', saveLegendDataToExcel);
+
+        function closeApp() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            window.close();
+        }
+
+    </script>
     </div>
 </body>
 
