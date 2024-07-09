@@ -280,11 +280,15 @@
             Object.keys(groupedDatasets).forEach(legendName => {
                 if (!legendName.startsWith('S_')) return;
 
-                const correspondingICLegend = legendName.replace('S_', 'IC_');
+                const correspondingICLegend = legendName.replace(/^S_/, 'IC_');
                 if (!groupedDatasets[correspondingICLegend]) return;
 
                 const datasetsS = groupedDatasets[legendName][0];
                 const datasetsIC = groupedDatasets[correspondingICLegend][0];
+
+                // Extract base names without prefixes for chart titles
+                const baseNameS = legendName.replace(/^S_/, '');
+                const baseNameIC = correspondingICLegend.replace(/^IC_/, '');
 
                 const canvas = document.createElement('canvas');
                 canvas.width = canvasWidth; // Set canvas width
@@ -299,45 +303,52 @@
                         labels: datasetsS.timeLabels,
                         datasets: [
                             {
-                                label: legendName,
+                                label: 'S', // Base name with full legend for S
                                 data: datasetsS.intensityData.map(val => parseFloat(val)),
                                 borderColor: 'rgb(255, 99, 132)',
                                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                borderWidth: 2,
-                                pointRadius: 4,
+                                borderWidth: 4,
+                                pointRadius: 0,
                                 pointBackgroundColor: 'white',
-                                tension: 0.1
+                                tension: 0.6,
+                                fill: false
                             },
                             {
-                                label: correspondingICLegend,
+                                label: 'IC', // Base name with full legend for IC
                                 data: datasetsIC.intensityData.map(val => parseFloat(val)),
                                 borderColor: 'rgb(54, 162, 235)',
                                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderWidth: 2,
-                                pointRadius: 4,
+                                borderWidth: 4,
+                                pointRadius: 0,
                                 pointBackgroundColor: 'white',
-                                tension: 0.1
+                                tension: 0.6,
+                                fill: false
                             }
                         ]
                     },
                     options: {
                         responsive: false, // Ensure chart does not resize
                         plugins: {
-                            legend: { display: true, position: 'top' }
+                            legend: { display: false } // Hide automatic legend
                         },
                         scales: {
-                            x: { title: { display: true, text: 'Time' } },
+                            x: { title: { display: true, text: 'Time (min)' } },
                             y: { title: { display: true, text: 'Intensity' }, suggestedMin: 0, suggestedMax: 100 }
+                        },
+                        // Display base names as titles
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `${baseNameS}`,
+                                font: {
+                                    size: 18
+                                }
+                            }
                         }
                     }
                 });
             });
         }
-
-
-
-
-
 
 
 
