@@ -122,19 +122,6 @@
         </div>
     </div>
 
-    <div class="controls-container">
-        <img src="icon/zoom_in_FILL0_wght400_GRAD0_opsz24.svg">Zoom
-        <input id="zoomRange" min="0" max="10" step="1" value="0" type="range">
-        <img src="icon/adjust_FILL0_wght400_GRAD0_opsz24.svg">Focus
-        <input id="focusRange" min="0" max="100" step="1" value="0" type="range">
-        <img src="icon/brightness_medium_FILL0_wght400_GRAD0_opsz24.svg">Brightness
-        <input id="brightnessRange" min="0" max="200" step="1" value="100" type="range">
-        <img src="icon/contrast_FILL0_wght400_GRAD0_opsz24.svg">Contrast
-        <input id="contrastRange" min="0" max="200" step="1" value="100" type="range">
-        <img src="icon/opacity_FILL0_wght400_GRAD0_opsz24.svg">Saturation
-        <input id="saturationRange" min="0" max="200" step="1" value="100" type="range">
-    </div>
-
     <div class="button-container">
         <button id="assignNamesButton">Enter Sample ID</button>
         <button id="saveLegendButton">Raw result data</button>
@@ -154,23 +141,16 @@
         let cap = null;
         let recordingActive = false;
         let frame = null;
-        let zoomValue = 10;
-        let focusValue = 10;
-        let brightnessValue = 100;
-        let contrastValue = 100;
-        let saturationValue = 100;
+
+        const brightnessValue = 800;
+        const contrastValue = 70;
+        const saturationValue = 60;
         const MAX_DATA_POINTS = 100000000000000000000;
         const colors = ['cornflowerblue']; // Define an array of colors
 
 
         // Request camera permission when the page loads
         document.addEventListener('DOMContentLoaded', function () {
-            toggleCameraButton.addEventListener('click', toggleCamera);
-            zoomRange.addEventListener('input', updateZoom);
-            focusRange.addEventListener('input', updateFocus);
-            brightnessRange.addEventListener('input', updateBrightness);
-            contrastRange.addEventListener('input', updateContrast);
-            saturationRange.addEventListener('input', updateSaturation);
             requestCameraPermission();
         });
 
@@ -178,11 +158,6 @@
             const constraints = {
                 video: {
                     facingMode: isFrontCamera ? "user" : "environment",
-                    zoom: zoomValue,
-                    focusDistance: focusValue,
-                    brightness: brightnessValue,
-                    contrast: contrastValue,
-                    saturation: saturationValue
                 }
             };
 
@@ -232,6 +207,42 @@
             }
             return null;
         }
+        function applyAdjustments(imageData) {
+            const data = imageData.data;
+            const brightness = brightnessValue / 100; // Convert percentage to decimal
+            const contrast = contrastValue / 100; // Convert percentage to decimal
+            const saturation = saturationValue / 100; // Convert percentage to decimal
+
+            // Apply brightness and contrast adjustments
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+
+                // Adjust brightness
+                r = r * brightness;
+                g = g * brightness;
+                b = b * brightness;
+
+                // Adjust contrast
+                r = (((r - 128) * contrast) + 128);
+                g = (((g - 128) * contrast) + 128);
+                b = (((b - 128) * contrast) + 128);
+
+                // Adjust saturation
+                const avg = (r + g + b) / 3;
+                r = avg + (r - avg) * saturation;
+                g = avg + (g - avg) * saturation;
+                b = avg + (b - avg) * saturation;
+
+                // Ensure values are within [0, 255]
+                data[i] = Math.min(255, Math.max(0, r));
+                data[i + 1] = Math.min(255, Math.max(0, g));
+                data[i + 2] = Math.min(255, Math.max(0, b));
+            }
+
+            return imageData;
+        }
 
         function updateFeed() {
             if (recordingActive) {
@@ -242,6 +253,12 @@
                     const img = new Image();
                     img.onload = function () {
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        // Process image data for adjustments
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const adjustedImageData = applyAdjustments(imageData);
+                        ctx.putImageData(adjustedImageData, 0, 0);
+
                         for (let i = 0; i < rois.length; i++) {
                             const roi = rois[i];
                             ctx.strokeStyle = 'red';
@@ -261,64 +278,13 @@
             requestAnimationFrame(updateFeed);
         }
 
+
         function startRecording() {
             recordingActive = true;
             setInterval(saveRoiColors, 1 * 1 * 1000); // Save ROI colors automatically every second
         }
 
-        function updateZoom() {
-            zoomValue = parseFloat(zoomRange.value);
-            applyCameraConstraints();
-        }
 
-        function updateFocus() {
-            focusValue = parseFloat(focusRange.value);
-            applyCameraConstraints();
-        }
-
-        function updateBrightness() {
-            brightnessValue = parseFloat(brightnessRange.value);
-            applyCameraConstraints();
-        }
-
-        function updateContrast() {
-            contrastValue = parseFloat(contrastRange.value);
-            applyCameraConstraints();
-        }
-
-        function updateSaturation() {
-            saturationValue = parseFloat(saturationRange.value);
-            applyCameraConstraints();
-        }
-
-        function applyCameraConstraints() {
-            if (stream) {
-                const tracks = stream.getVideoTracks();
-                if (tracks.length > 0) {
-                    const settings = tracks[0].getSettings();
-                    const capabilities = tracks[0].getCapabilities();
-                    const constraints = {
-                        zoom: zoomValue,
-                        focusDistance: focusValue,
-                        brightness: brightnessValue,
-                        contrast: contrastValue,
-                        saturation: saturationValue
-                    };
-                    // Check if constraints are supported by the browser and the device
-                    if ('applyConstraints' in tracks[0] && typeof tracks[0].applyConstraints === 'function') {
-                        tracks[0].applyConstraints(constraints)
-                            .then(() => {
-                                console.log('Camera constraints applied successfully.');
-                            })
-                            .catch((error) => {
-                                console.error('Failed to apply camera constraints:', error);
-                            });
-                    } else {
-                        console.warn('Camera constraints are not supported.');
-                    }
-                }
-            }
-        }
 
         function assignRoiNames() {
             const roiTableContainer = document.getElementById('roiTableContainer');
@@ -409,16 +375,12 @@
 
 
 
-
-
-
-
         function createRoi(event) {
             const canvas = document.getElementById('canvas');
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            const RECTANGLE_SIZE = 10;
+            const RECTANGLE_SIZE = 20;
             const x1 = x - RECTANGLE_SIZE / 2;
             const y1 = y - RECTANGLE_SIZE / 2;
             const x2 = x1 + RECTANGLE_SIZE;
@@ -622,12 +584,13 @@
                         yValues.push(data[j][1]);
 
                         // Change graph color to green if y-value exceeds 50
-                        if (data[j][1] > 50) {
+                        if (data[j][1] > 80) {
                             ctx.strokeStyle = 'lawngreen';
                         } else {
                             ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
                         }
                     }
+
 
                     // Draw the graph line
                     ctx.beginPath();
@@ -676,7 +639,7 @@
                         // Change the fill style to match the graph color
                         if (roiData[i] && roiData[i].length > 0) {
                             const lastDataPoint = roiData[i][roiData[i].length - 1];
-                            if (lastDataPoint[1] > 50) {
+                            if (lastDataPoint[1] > 80) {
                                 // Draw legend box and text
                                 legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
                                 legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
@@ -725,7 +688,7 @@
                 // Check if ROI's green value exceeds 50
                 if (roiData[j] && roiData[j].length > 0) {
                     const lastDataPoint = roiData[j][roiData[j].length - 1];
-                    if (lastDataPoint[1] > 50) {
+                    if (lastDataPoint[1] > 80) {
                         legendColor = 'lawngreen'; // Set color to lawngreen if intensity exceeds 50
                     }
                 }
