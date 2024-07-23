@@ -142,9 +142,9 @@
         let recordingActive = false;
         let frame = null;
 
-        const brightnessValue = 800;
-        const contrastValue = 70;
-        const saturationValue = 60;
+        const brightnessValue = 500;
+        const contrastValue = 100;
+        const saturationValue = 100;
         const MAX_DATA_POINTS = 100000000000000000000;
         const colors = ['cornflowerblue']; // Define an array of colors
 
@@ -584,7 +584,7 @@
                         yValues.push(data[j][1]);
 
                         // Change graph color to green if y-value exceeds 50
-                        if (data[j][1] > 80) {
+                        if (data[j][1] > 85) {
                             ctx.strokeStyle = 'lawngreen';
                         } else {
                             ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
@@ -639,7 +639,7 @@
                         // Change the fill style to match the graph color
                         if (roiData[i] && roiData[i].length > 0) {
                             const lastDataPoint = roiData[i][roiData[i].length - 1];
-                            if (lastDataPoint[1] > 80) {
+                            if (lastDataPoint[1] > 85) {
                                 // Draw legend box and text
                                 legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
                                 legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
@@ -688,7 +688,7 @@
                 // Check if ROI's green value exceeds 50
                 if (roiData[j] && roiData[j].length > 0) {
                     const lastDataPoint = roiData[j][roiData[j].length - 1];
-                    if (lastDataPoint[1] > 80) {
+                    if (lastDataPoint[1] > 85) {
                         legendColor = 'lawngreen'; // Set color to lawngreen if intensity exceeds 50
                     }
                 }
