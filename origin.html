@@ -303,7 +303,7 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 30 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 120 * 1000); // Save ROI colors automatically every second
         }
 
 
@@ -534,7 +534,7 @@
         let lastUpdate = Date.now();
         function updateRealtimeGraph() {
             const now = Date.now();
-            if (now - lastUpdate > 1 * 1000) { // Update every 1000 ms
+            if (now - lastUpdate > 60 * 1000) { // Update every 1000 ms
                 lastUpdate = now;
                 if (roiData.length > 0) {
                     const canvas = document.getElementById('graphCanvas');
