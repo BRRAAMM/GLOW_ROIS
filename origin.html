@@ -9,103 +9,103 @@
         #canvas {
             border: 1px solid black;
             cursor: crosshair;
-            
+
         }
 
-            /* Use the built-in crosshair cursor */
-            canvas {
-                border: 2px solid black;
-            }
+        /* Use the built-in crosshair cursor */
+        canvas {
+            border: 2px solid black;
+        }
 
-            .container {
-                display: flex;
-                justify-content: space-between;
-                margin-top: 20px;
-            }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
 
-            .canvas-container {
-                position: relative;
-                width: 800px;
-                height: 600px;
-            }
+        .canvas-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
 
-            .legend-container {
-                position: relative;
-                width: 300px;
-                height: 600px;
-                background-color: #1e1e1e;
-            }
+        .legend-container {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background-color: #1e1e1e;
+        }
 
-            .graph-container {
-                position: relative;
-                background-color: #e9e9e9;
-                width: 600px;
-                height: 600px;
-            }
+        .graph-container {
+            position: relative;
+            background-color: #e9e9e9;
+            width: 600px;
+            height: 600px;
+        }
 
-            .controls-container {
-                margin-top: 20px;
-                display: flex;
-                align-items: center;
-            }
+        .controls-container {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
 
-            .controls-container img {
-                margin: 0 10px;
-                height: 24px;
-                width: auto;
-            }
+        .controls-container img {
+            margin: 0 10px;
+            height: 24px;
+            width: auto;
+        }
 
-            .controls-container input[type="range"] {
-                margin: 0 10px;
-            }
+        .controls-container input[type="range"] {
+            margin: 0 10px;
+        }
 
-            .button-container {
-                margin-top: 10px;
-            }
+        .button-container {
+            margin-top: 10px;
+        }
 
-            button {
-                margin-right: 10px;
-                padding: 10px 20px;
-                background-color: #c69dff;
-                color: #ffffff;
-                border: none;
-                cursor: pointer;
-                border-radius: 5px;
-            }
+        button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #c69dff;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
 
-            button:hover {
-                background-color: #312760;
-            }
+        button:hover {
+            background-color: #312760;
+        }
 
-            #roiTableContainer {
-                max-width: 60%;
-                max-height: 150px;
-                /* Set maximum height for the container */
-                overflow-y: auto;
-                /* Enable vertical scrolling if content exceeds max height */
-            }
+        #roiTableContainer {
+            max-width: 60%;
+            max-height: 150px;
+            /* Set maximum height for the container */
+            overflow-y: auto;
+            /* Enable vertical scrolling if content exceeds max height */
+        }
 
-            .scroll-table {
-                width: 100%;
-                /* Ensure the table fills its container */
-                border-collapse: collapse;
-            }
+        .scroll-table {
+            width: 100%;
+            /* Ensure the table fills its container */
+            border-collapse: collapse;
+        }
 
-            .scroll-table th,
-            .scroll-table td {
-                border: 1px solid #8188c6;
-                background-color: #f1ffe4;
-                /* Add borders to table cells for clarity */
-                padding: 8px;
-                /* Padding inside cells */
-                text-align: left;
-                /* Align text to the left */
-            }
+        .scroll-table th,
+        .scroll-table td {
+            border: 1px solid #8188c6;
+            background-color: #f1ffe4;
+            /* Add borders to table cells for clarity */
+            padding: 8px;
+            /* Padding inside cells */
+            text-align: left;
+            /* Align text to the left */
+        }
 
-            .scroll-table th {
-                background-color: #cbd3ff;
-                /* Gray background for table headers */
-            }
+        .scroll-table th {
+            background-color: #cbd3ff;
+            /* Gray background for table headers */
+        }
     </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
@@ -149,11 +149,12 @@
         let recordingActive = false;
         let frame = null;
 
-        const brightnessValue = 400;
-        const contrastValue = 70;
+        const brightnessValue = 200;
+        const contrastValue = 60;
         const saturationValue = 150;
-        const MAX_DATA_POINTS = 10000000000000000000000;
+        const MAX_DATA_POINTS = 10000000000000000000000000;
         const colors = ['cornflowerblue']; // Define an array of colors
+
 
         function drawCrosshair(x, y) {
             // Draw crosshair
@@ -303,7 +304,7 @@
 
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 120 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 1 * 1000); // Save ROI colors automatically every second
         }
 
 
@@ -394,6 +395,7 @@
             // Append table to container
             roiTableContainer.appendChild(table);
         }
+
 
 
 
@@ -531,192 +533,179 @@
             document.body.removeChild(link);
         }
 
-        let lastUpdate = Date.now();
+
+
         function updateRealtimeGraph() {
-            const now = Date.now();
-            if (now - lastUpdate > 60 * 1000) { // Update every 1000 ms
-                lastUpdate = now;
-                if (roiData.length > 0) {
-                    const canvas = document.getElementById('graphCanvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (roiData.length > 0) {
+                const canvas = document.getElementById('graphCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw X-axis
+                // Draw X-axis
+                ctx.beginPath();
+                ctx.moveTo(50, canvas.height - 40);
+                ctx.lineTo(canvas.width - 20, canvas.height - 40);
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Y-axis
+                ctx.beginPath();
+                ctx.moveTo(50, 20);
+                ctx.lineTo(50, canvas.height - 40);
+                ctx.stroke();
+
+                // Draw X-axis title
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('Time (minutes)', canvas.width / 2, canvas.height - 10);
+
+                // Draw Y-axis title
+                ctx.save();
+                ctx.translate(10, canvas.height / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillText('Fluorescent Intensity', 0, 0);
+                ctx.restore();
+
+                const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
+                const tickInterval = Math.ceil(maxTime / 12);
+
+                // Draw X-axis ticks and labels
+                for (let t = 0; t <= maxTime; t += tickInterval) {
+                    const x = 50 + (t / maxTime) * (canvas.width - 70);
                     ctx.beginPath();
-                    ctx.moveTo(50, canvas.height - 40);
-                    ctx.lineTo(canvas.width - 20, canvas.height - 40);
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 2;
+                    ctx.moveTo(x, canvas.height - 40);
+                    ctx.lineTo(x, canvas.height - 30);
                     ctx.stroke();
-
-                    // Draw Y-axis
-                    ctx.beginPath();
-                    ctx.moveTo(50, 20);
-                    ctx.lineTo(50, canvas.height - 40);
-                    ctx.stroke();
-
-                    // Draw X-axis title
                     ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.font = 'bold 10px Arial';
-                    ctx.fillText('Time (minutes)', canvas.width / 2, canvas.height - 10);
+                    // Convert time to minutes and display as label
+                    const minutes = Math.floor(t);
+                    const seconds = Math.round((t - minutes) * 60);
+                    ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
+                }
 
-                    // Draw Y-axis title
-                    ctx.save();
-                    ctx.translate(10, canvas.height / 2);
-                    ctx.rotate(-Math.PI / 2);
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Fluorescent Intensity', 0, 0);
-                    ctx.restore();
+                const maxIntensity = 300;
+                const intensityInterval = Math.ceil(maxIntensity / 60);
 
-                    const maxTime = (Date.now() - timeIntervals[0]) / (60 * 1000); // Current time in minutes
-                    const tickInterval = Math.ceil(maxTime / 12);
-
-                    // Draw X-axis ticks and labels
-                    for (let t = 0; t <= maxTime; t += tickInterval) {
-                        const x = 50 + (t / maxTime) * (canvas.width - 70);
-                        ctx.beginPath();
-                        ctx.moveTo(x, canvas.height - 40);
-                        ctx.lineTo(x, canvas.height - 30);
-                        ctx.stroke();
-                        ctx.fillStyle = 'black';
-                        const minutes = Math.floor(t);
-                        const seconds = Math.round((t - minutes) * 60);
-                        ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
-                    }
-
-                    const maxIntensity = 300;
-                    const intensityInterval = Math.ceil(maxIntensity / 60);
-
-                    // Draw Y-axis ticks and labels
-                    for (let i = 0; i <= maxIntensity; i += intensityInterval) {
-                        const y = canvas.height - 40 - (i / maxIntensity) * (canvas.height - 60);
-                        ctx.beginPath();
-                        ctx.moveTo(50, y);
-                        ctx.lineTo(60, y);
-                        ctx.stroke();
-                        ctx.fillText(`${i}`, 30, y + 5);
-                    }
-
-                    // Draw the baseline at y = 85
-                    const baselineValue = 85;
-                    const baselineY = canvas.height - 40 - (baselineValue / maxIntensity) * (canvas.height - 60);
+                // Draw Y-axis ticks and labels
+                for (let i = 0; i <= maxIntensity; i += intensityInterval) {
+                    const y = canvas.height - 40 - (i / maxIntensity) * (canvas.height - 60);
                     ctx.beginPath();
-                    ctx.setLineDash([5, 5]); // Dotted line
-                    ctx.strokeStyle = 'grey';
-                    ctx.lineWidth = 1;
-                    ctx.moveTo(50, baselineY);
-                    ctx.lineTo(canvas.width - 20, baselineY);
+                    ctx.moveTo(50, y);
+                    ctx.lineTo(60, y);
                     ctx.stroke();
-                    ctx.setLineDash([]); // Reset to solid lines
+                    ctx.fillText(`${i}`, 30, y + 5);
+                }
 
-                    // Function to compute 30-second average
-                    function compute30SecondAverage(data, timeIntervals, currentTime) {
-                        const thirtySecondsAgo = currentTime - 30 * 1000;
-                        const recentData = data.filter((_, index) => timeIntervals[index] >= thirtySecondsAgo);
-                        return recentData.length > 0 ?
-                            recentData.reduce((sum, d) => sum + d[1], 0) / recentData.length :
-                            0;
-                    }
+                for (let i = 0; i < roiData.length; i++) {
+                    const data = roiData[i];
+                    const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
+                    const xValues = [];
+                    const yValues = [];
+                    for (let j = startIdx; j < data.length; j++) {
+                        const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
+                        xValues.push(timeInterval);
+                        yValues.push(data[j][1]);
 
-                    for (let i = 0; i < roiData.length; i++) {
-                        const data = roiData[i];
-                        const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
-                        const xValues = [];
-                        const avgYValues = [];
-
-                        for (let j = startIdx; j < data.length; j++) {
-                            const timeInterval = (timeIntervals[j] - timeIntervals[startIdx]) / (60 * 1000); // Convert to minutes
-                            xValues.push(timeInterval);
-
-                            // Calculate average value for the last 30 seconds
-                            const avgIntensity = compute30SecondAverage(data, timeIntervals, timeIntervals[j]);
-                            avgYValues.push(avgIntensity);
-                        }
-
-                        // Draw the graph line with dynamic color
-                        let previousColor = 'cornflowerblue'; // Default color
-                        ctx.lineWidth = 2;
-                        const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
-                        const yIncrement = (canvas.height - 60) / maxIntensity;
-
-                        ctx.beginPath();
-                        ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - avgYValues[0] * yIncrement);
-
-                        for (let j = 1; j < xValues.length; j++) {
-                            const currentIntensity = avgYValues[j];
-                            const currentColor = currentIntensity > 85 ? 'lawngreen' : 'cornflowerblue';
-
-                            if (currentColor !== previousColor) {
-                                // If the color changes, draw the segment with the previous color
-                                ctx.strokeStyle = previousColor;
-                                ctx.stroke();
-                                ctx.beginPath();
-                                ctx.moveTo(50 + xValues[j - 1] * xIncrement, canvas.height - 40 - avgYValues[j - 1] * yIncrement);
-                                previousColor = currentColor;
-                            }
-
-                            ctx.lineTo(50 + xValues[j] * xIncrement, canvas.height - 40 - avgYValues[j] * yIncrement);
-                        }
-
-                        // Draw the final segment with the last color
-                        ctx.strokeStyle = previousColor;
-                        ctx.stroke();
-
-                        // Draw sample name at the end of the graph line
-                        const lastDataPointIndex = avgYValues.length - 1;
-                        if (lastDataPointIndex >= 0) {
-                            const x = 50 + xValues[lastDataPointIndex] * xIncrement;
-                            const y = canvas.height - 40 - avgYValues[lastDataPointIndex] * yIncrement;
-                            ctx.fillStyle = 'black';
-                            ctx.fillText(rois[i][4], x + 5, y - 5);
+                        // Change graph color to green if y-value exceeds 50
+                        if (data[j][1] > 85) {
+                            ctx.strokeStyle = 'lawngreen';
+                        } else {
+                            ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
                         }
                     }
 
-                    const legendCanvas = document.getElementById('legendCanvas');
-                    const legendCtx = legendCanvas.getContext('2d');
-                    legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
 
-                    // Draw legends
-                    legendCtx.fillStyle = 'white';
-                    legendCtx.font = '12px Arial';
-                    const legendBoxSize = 20;
-                    const legendSpacing = 5;
-                    const maxLegendsPerColumn = 20;
-                    const legendContainerWidth = legendCanvas.width;
-                    const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
-                    const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
 
-                    for (let col = 0; col < numColumns; col++) {
-                        for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
-                            const rowIndex = i % maxLegendsPerColumn;
-                            const legendX = col * columnWidth;
-                            const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
+                    // Draw the graph line
+                    ctx.beginPath();
+                    ctx.lineWidth = 2;
+                    const xIncrement = (canvas.width - 70) / xValues[xValues.length - 1];
+                    const yIncrement = (canvas.height - 60) / maxIntensity;
+                    ctx.moveTo(50 + xValues[0] * xIncrement, canvas.height - 40 - yValues[0] * yIncrement);
+                    for (let j = 1; j < xValues.length; j++) {
+                        const x = 50 + xValues[j] * xIncrement;
+                        const y = canvas.height - 40 - yValues[j] * yIncrement;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
 
-                            if (roiData[i] && roiData[i].length > 0) {
-                                const lastDataPoint = roiData[i][roiData[i].length - 1];
-                                if (lastDataPoint[1] > 85) {
-                                    // Draw legend box and text
-                                    legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
-                                    legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                    legendCtx.fillStyle = 'white';
-                                    legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-                                } else {
-                                    legendCtx.fillStyle = 'cornflowerblue'; // Default color
-                                    legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                    legendCtx.fillStyle = 'white';
-                                    legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
-                                }
+                    // Draw sample name at the end of the graph line
+                    const lastDataPointIndex = data.length - 1;
+                    if (lastDataPointIndex >= 0) {
+                        const x = 50 + xValues[lastDataPointIndex] * xIncrement;
+                        const y = canvas.height - 40 - yValues[lastDataPointIndex] * yIncrement;
+                        ctx.fillStyle = 'black';
+                        ctx.fillText(rois[i][4], x + 5, y - 5); // Adjust the position as needed
+                    }
+                }
+
+                const legendCanvas = document.getElementById('legendCanvas');
+                const legendCtx = legendCanvas.getContext('2d');
+                legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
+
+                // Draw baseline
+                const baselineY = canvas.height - 40 - (85 / maxIntensity) * (canvas.height - 60);
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]); // Dotted line
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 1;
+                ctx.moveTo(50, baselineY);
+                ctx.lineTo(canvas.width - 20, baselineY);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset to solid lines
+
+
+                // Draw legends
+                legendCtx.fillStyle = 'white';
+                legendCtx.font = '12px Arial';
+                const legendBoxSize = 20;
+                const legendSpacing = 5;
+                const maxLegendsPerColumn = 20;
+                const legendContainerWidth = legendCanvas.width;
+                const columnWidth = legendBoxSize + 10 + legendCtx.measureText('Sample Name').width; // Width of a single legend plus some padding for text
+                const numColumns = Math.ceil(rois.length / maxLegendsPerColumn);
+
+                for (let col = 0; col < numColumns; col++) {
+                    for (let i = col * maxLegendsPerColumn; i < Math.min((col + 1) * maxLegendsPerColumn, rois.length); i++) {
+                        const rowIndex = i % maxLegendsPerColumn;
+                        const legendX = col * columnWidth;
+                        const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
+
+                        // Change the fill style to match the graph color
+                        if (roiData[i] && roiData[i].length > 0) {
+                            const lastDataPoint = roiData[i][roiData[i].length - 1];
+                            if (lastDataPoint[1] > 85) {
+                                // Draw legend box and text
+                                legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
+                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                                legendCtx.fillStyle = 'white';
+                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+
+                                // Display time point alongside ROI if intensity exceeds 50
+                                // const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 50);
+                                // if (timeIndex !== -1) {
+                                //   const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (60 * 1000); // Convert to minutes
+                                //   legendCtx.fillText(`(${timeInterval.toFixed(2)}m)`, legendX + 80, legendY + legendBoxSize / 2 + 5);
+                                //  }
                             } else {
-                                legendCtx.fillStyle = 'cornflowerblue'; // Use default color if no data yet
+                                legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
                                 legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
                                 legendCtx.fillStyle = 'white';
                                 legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
                             }
+                        } else {
+                            legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
+                            legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                            legendCtx.fillStyle = 'white';
+                            legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
                         }
                     }
                 }
             }
+
             requestAnimationFrame(updateRealtimeGraph);
         }
 
