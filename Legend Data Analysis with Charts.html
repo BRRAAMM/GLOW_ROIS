@@ -283,158 +283,128 @@
         }
 
 
-        // Sigmoid function to calculate the sigmoid curve
-function sigmoid(x, L, k, x0) {
-    return L / (1 + Math.exp(-k * (x - x0)));
-}
 
-// Sigmoid regression function that fits intensity data to a sigmoid curve
-function sigmoidRegression(xData, yData) {
-    const L = Math.max(...yData); // Maximum intensity value (as L)
-    const k = 0.1;  // A fixed steepness parameter (can be adjusted)
-    const x0 = xData[Math.floor(xData.length / 2)];  // A midpoint, you can modify this for better fitting
+ function createCharts() {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = ''; // Clear previous charts
 
-    const fittedData = xData.map(x => sigmoid(x, L, k, x0));
-    console.log("Sigmoid Regression Data: ", fittedData); // Debugging: Log the fitted data
-    return fittedData;
-}
+            // Group datasets by legend name (S_1, IC_1, S_2, IC_2, PC, NC, etc.)
+            const groupedDatasets = groupDatasetsByLegendName();
 
-// Function to create charts
-function createCharts() {
-    const chartContainer = document.getElementById('chartContainer');
-    chartContainer.innerHTML = ''; // Clear previous charts
+            // Set fixed dimensions for the canvas
+            const canvasWidth = 600; // Set desired width (e.g., 600 pixels)
+            const canvasHeight = 400; // Set desired height (e.g., 400 pixels)
 
-    // Group datasets by legend name (S_1, IC_1, S_2, IC_2, PC, NC, etc.)
-    const groupedDatasets = groupDatasetsByLegendName();
+            // Iterate over each S_ group to create a graph
+            Object.keys(groupedDatasets).forEach(legendName => {
+                if (legendName.startsWith('S_')) { // Process only S_ groups (S_1, S_2, etc.)
+                    const correspondingICLegend = legendName.replace('S_', 'IC_');
+                    if (groupedDatasets[correspondingICLegend]) {
+                        const datasetsS = groupedDatasets[legendName][0];
+                        const datasetsIC = groupedDatasets[correspondingICLegend][0];
 
-    // Set fixed dimensions for the canvas
-    const canvasWidth = 600; // Set desired width (e.g., 600 pixels)
-    const canvasHeight = 400; // Set desired height (e.g., 400 pixels)
+                        // Create a canvas for each group (S_ vs IC_)
+                        const canvas = document.createElement('canvas');
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasHeight;
+                        chartContainer.appendChild(canvas);
 
-    // Iterate over each S_ group to create a graph
-    Object.keys(groupedDatasets).forEach(legendName => {
-        if (legendName.startsWith('S_')) { // Process only S_ groups (S_1, S_2, etc.)
-            const correspondingICLegend = legendName.replace('S_', 'IC_');
-            if (groupedDatasets[correspondingICLegend]) {
-                const datasetsS = groupedDatasets[legendName][0];
-                const datasetsIC = groupedDatasets[correspondingICLegend][0];
+                        const ctx = canvas.getContext('2d');
 
-                // Log the raw data to make sure it's being accessed properly
-                console.log("Datasets S: ", datasetsS);
-                console.log("Datasets IC: ", datasetsIC);
+                        // Prepare the datasets for the current graph
+                        const datasets = [];
 
-                // Refine intensity data using sigmoid regression
-                const refinedIntensityS = sigmoidRegression(datasetsS.timeLabels.map((_, i) => i), datasetsS.intensityData);
-                const refinedIntensityIC = sigmoidRegression(datasetsIC.timeLabels.map((_, i) => i), datasetsIC.intensityData);
+                        // Add S vs IC datasets for the current group
+                        datasets.push({
+                            label: legendName,
+                            data: datasetsS.intensityData.map(val => parseFloat(val)),
+                            borderColor: 'rgb(255, 99, 132)', // Red color for S
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red transparency for S
+                            borderWidth: 2,
+                            pointRadius: 0,  // Set pointRadius to 0 to remove circles
+                            pointBackgroundColor: 'white',
+                            tension: 0.1
+                        });
 
-                // Log refined data to ensure the regression is working
-                console.log("Refined Intensity S: ", refinedIntensityS);
-                console.log("Refined Intensity IC: ", refinedIntensityIC);
+                        datasets.push({
+                            label: correspondingICLegend,
+                            data: datasetsIC.intensityData.map(val => parseFloat(val)),
+                            borderColor: 'rgb(54, 162, 235)', // Blue color for IC
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)', // Blue transparency for IC
+                            borderWidth: 2,
+                            pointRadius: 0,  // Set pointRadius to 0 to remove circles
+                            pointBackgroundColor: 'white',
+                            tension: 0.1
+                        });
 
-                // Create a canvas for each group (S_ vs IC_)
-                const canvas = document.createElement('canvas');
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                chartContainer.appendChild(canvas);
+                        // Add PC vs NC datasets for the current group (if available)
+                        if (groupedDatasets['PC'] && groupedDatasets['NC']) {
+                            const datasetsPC = groupedDatasets['PC'][0];
+                            const datasetsNC = groupedDatasets['NC'][0];
 
-                const ctx = canvas.getContext('2d');
+                            datasets.push({
+                                label: 'PC',
+                                data: datasetsPC.intensityData.map(val => parseFloat(val)),
+                                borderColor: 'rgb(255, 159, 64)', // Orange color for PC
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)', // Orange transparency for PC
+                                borderWidth: 2,
+                                pointRadius: 0,  // Set pointRadius to 0 to remove circles
+                                pointBackgroundColor: 'white',
+                                tension: 0.1
+                            });
 
-                // Prepare the datasets for the current graph
-                const datasets = [];
+                            datasets.push({
+                                label: 'NC',
+                                data: datasetsNC.intensityData.map(val => parseFloat(val)),
+                                borderColor: 'rgb(75, 192, 192)', // Green color for NC
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)', // Green transparency for NC
+                                borderWidth: 2,
+                                pointRadius: 0,  // Set pointRadius to 0 to remove circles
+                                pointBackgroundColor: 'white',
+                                tension: 0.1
+                            });
+                        }
 
-                // Add S vs IC datasets for the current group
-                datasets.push({
-                    label: legendName,
-                    data: refinedIntensityS,
-                    borderColor: 'rgb(255, 99, 132)', // Red color for S
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red transparency for S
-                    borderWidth: 2,
-                    pointRadius: 0,  // Set pointRadius to 0 to remove circles
-                    pointBackgroundColor: 'white',
-                    tension: 0.1
-                });
-
-                datasets.push({
-                    label: correspondingICLegend,
-                    data: refinedIntensityIC,
-                    borderColor: 'rgb(54, 162, 235)', // Blue color for IC
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)', // Blue transparency for IC
-                    borderWidth: 2,
-                    pointRadius: 0,  // Set pointRadius to 0 to remove circles
-                    pointBackgroundColor: 'white',
-                    tension: 0.1
-                });
-
-                // Check if PC and NC are available to add to the graph
-                if (groupedDatasets['PC'] && groupedDatasets['NC']) {
-                    const datasetsPC = groupedDatasets['PC'][0];
-                    const datasetsNC = groupedDatasets['NC'][0];
-
-                    datasets.push({
-                        label: 'PC',
-                        data: datasetsPC.intensityData.map(val => parseFloat(val)),
-                        borderColor: 'rgb(255, 159, 64)', // Orange color for PC
-                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Orange transparency for PC
-                        borderWidth: 2,
-                        pointRadius: 0,  // Set pointRadius to 0 to remove circles
-                        pointBackgroundColor: 'white',
-                        tension: 0.1
-                    });
-
-                    datasets.push({
-                        label: 'NC',
-                        data: datasetsNC.intensityData.map(val => parseFloat(val)),
-                        borderColor: 'rgb(75, 192, 192)', // Green color for NC
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Green transparency for NC
-                        borderWidth: 2,
-                        pointRadius: 0,  // Set pointRadius to 0 to remove circles
-                        pointBackgroundColor: 'white',
-                        tension: 0.1
-                    });
-                }
-
-                // Create the chart for the current group
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: datasetsS.timeLabels, // Use time labels from S_ dataset
-                        datasets: datasets // Use the datasets for S, IC, PC, and NC
-                    },
-                    options: {
-                        responsive: false,
-                        plugins: {
-                            legend: { display: true, position: 'top' },
-                            annotation: {
-                                annotations: {
-                                    thresholdLine: {
-                                        type: 'line',
-                                        yMin: 40,
-                                        yMax: 40,
-                                        borderColor: 'black',
-                                        borderWidth: 2,
-                                        borderDash: [5, 5], // Dashed line pattern
-                                        label: {
-                                            content: 'Threshold',
-                                            position: 'end',
-                                            backgroundColor: 'black',
-                                            color: 'white'
+                        // Create the chart for the current group
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: datasetsS.timeLabels, // Use time labels from S_ dataset
+                                datasets: datasets // Use the datasets for S, IC, PC, and NC
+                            },
+                            options: {
+                                responsive: false,
+                                plugins: {
+                                    legend: { display: true, position: 'top' },
+                                    annotation: {
+                                        annotations: {
+                                            thresholdLine: {
+                                                type: 'line',
+                                                yMin: 40,
+                                                yMax: 40,
+                                                borderColor: 'black',
+                                                borderWidth: 2,
+                                                borderDash: [5, 5], // Dashed line pattern
+                                                label: {
+                                                    content: 'Threshold',
+                                                    position: 'end',
+                                                    backgroundColor: 'black',
+                                                    color: 'white'
+                                                }
+                                            }
                                         }
                                     }
+                                },
+                                scales: {
+                                    x: { title: { display: true, text: 'Time' } },
+                                    y: { title: { display: true, text: 'Intensity' }, suggestedMin: 0, suggestedMax: 100 }
                                 }
                             }
-                        },
-                        scales: {
-                            x: { title: { display: true, text: 'Time' } },
-                            y: { title: { display: true, text: 'Intensity' }, suggestedMin: 0, suggestedMax: 100 }
-                        }
+                        });
                     }
-                });
-            } else {
-                console.log(`No corresponding IC_ group found for ${legendName}`); // Debugging: Log missing IC group
-            }
+                }
+            });
         }
-    });
-}
 
 
 
