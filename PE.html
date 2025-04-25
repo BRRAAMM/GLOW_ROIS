@@ -1,11 +1,22 @@
 <!DOCTYPE html>
+<!-- saved from url=(0103)file:///C:/Users/BRAAMM/OneDrive/Desktop/Incubator%20parts/MBs/RGlow%20softwares/RGLOW/RGLOW%20NEW.html -->
 <html lang="en">
 
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RGLOW</title>
     <style>
+        #canvas {
+            border: 1px solid black;
+            cursor: crosshair;
+
+        }
+
+        /* Use the built-in crosshair cursor */
         canvas {
             border: 2px solid black;
         }
@@ -25,8 +36,8 @@
         .legend-container {
             position: relative;
             width: 300px;
-            height: 600px;
-            background-color: #1e1e1e;
+            height: 602px;
+            background-color: #221534;
         }
 
         .graph-container {
@@ -99,9 +110,167 @@
             background-color: #cbd3ff;
             /* Gray background for table headers */
         }
+
+        #countdownTimeInput {
+            font-size: 14px;
+            padding: 3px;
+            width: 120px;
+            margin-bottom: -100px;
+            margin-top: 300px;
+            /* Adjust this value to move the input box down */
+        }
+
+
+        /* Position and style the countdown container */
+        #countdownDisplay {
+            font-family: 'Bahnschrift Condensed', sans-serif;
+            /* Stylish font */
+            font-size: 14px;
+            /* Bigger font size */
+            font-weight: bold;
+            color: #fff;
+            /* White color for the text */
+            background: linear-gradient(to right, #483970, #7b6b9d);
+            /* Gradient background */
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            width: 160px;
+            position: fixed;
+            bottom: 20px;
+            /* Position from the bottom */
+            right: 20px;
+            /* Position from the right */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease-in-out;
+            /* Smooth transition for changes */
+        }
+
+        /* Change color when countdown is below 10 seconds */
+        .critical {
+            color: #ff0000;
+            /* Red color for critical state */
+            background: linear-gradient(to right, #ff0000, #ff7e5f);
+            /* Gradient from red */
+        }
+
+        /* Add animation to make the countdown blink as it approaches zero */
+        .blinking {
+            animation: blink 1s infinite;
+        }
+
+        /* Animation for blinking effect */
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #analysisMessageBox {
+            position: fixed;
+            bottom: 10px;
+            left: 65%;
+            transform: translateX(-50%);
+            background-color: #000;
+            /* Solid black background */
+            color: white;
+            padding: 5px;
+            border: 2px solid #333;
+            /* Solid border with a darker color */
+            border-radius: 10px;
+            width: 500px;
+            /* Increased width for a wider box */
+            font-family: Arial, sans-serif;
+            z-index: 9999;
+            text-align: left;
+            max-height: 70px;
+            overflow-y: auto;
+        }
+
+        #analysisMessageBox p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        #analysisMessageBox ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        #analysisMessageBox li {
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #analysisMessageBox li span {
+            color: orange;
+        }
+
+        #analysisMessageBox li.noResults {
+            color: #5cff77;
+            /* Green color when no results */
+            font-style: italic;
+        }
+
+        #saveLegendButton {
+            background-color: #555;
+            /* Dark background */
+            border: 2px solid #333;
+            /* Border color */
+            color: white;
+            /* Text color */
+            padding: 12px 30px;
+            /* Padding for button size */
+            font-size: 16px;
+            /* Set text size */
+            text-align: center;
+            /* Center text */
+            text-decoration: none;
+            /* Remove underline */
+            display: inline-flex;
+            /* Allow icon and text to align horizontally */
+            align-items: center;
+            /* Vertically center content */
+            border-radius: 4px;
+            /* Slightly rounded edges */
+            cursor: pointer;
+            /* Pointer cursor on hover */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* Smooth transition */
+        }
+
+        #saveLegendButton i {
+            margin-right: 8px;
+            /* Space between icon and text */
+        }
+
+        #saveLegendButton:hover {
+            background-color: #444;
+            /* Darker color on hover */
+            transform: scale(1.05);
+            /* Slightly enlarge the button */
+        }
+
+        #saveLegendButton:active {
+            background-color: #333;
+            /* Even darker color when clicked */
+            transform: scale(1);
+            /* Button size stays normal when clicked */
+        }
     </style>
+    <script src="./RGLOW NEWv3_files/xlsx.full.min.js.download"></script>
+    <script src="./RGLOW NEWv3_files/numeric.min.js.download"></script>
 </head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+
 
 
 
@@ -115,16 +284,31 @@
             <canvas id="canvas" width="800" height="600"></canvas>
         </div>
         <div class="legend-container">
-            <canvas id="legendCanvas" width="300" height="600"></canvas>
+            <canvas id="legendCanvas" width="200" height="600"></canvas>
         </div>
         <div class="graph-container">
-            <canvas id="graphCanvas" width="600" height="600"></canvas>
+            <canvas id="graphCanvas" width="520" height="600"></canvas>
+        </div>
+    </div>
+    <div id="countdownDisplay">Test time remaining: 00:00:00</div>
+    <div style="position: fixed; bottom: 80px; right: 20px;">
+        <label for="countdownTimeInput" style="font-size: 16px; color: rgb(2, 38, 51);">Set Test time:</label>
+        <input type="text" id="countdownTimeInput" placeholder="00:00:00">
+    </div>
+
+    <div id="analysisMessageBox" class="analysis-box">
+        <h3>Analysis Info</h3>
+        <div id="analysisContent">
+            <!-- Analytical information will be dynamically updated here -->
         </div>
     </div>
 
+
+
+
     <div class="button-container">
         <button id="assignNamesButton">Enter Sample ID</button>
-        <button id="saveLegendButton">Raw result data</button>
+        <button id="saveLegendButton">Start</button>
         <button id="saveGraphPNGButton">Graph</button>
         <button id="saveButton">Excel</button>
         <button id="toggleCameraButton">Switch cam</button>
@@ -142,11 +326,27 @@
         let recordingActive = false;
         let frame = null;
 
-        const brightnessValue = 500;
-        const contrastValue = 100;
-        const saturationValue = 100;
-        const MAX_DATA_POINTS = 100000000000000000000;
+        const brightnessValue = 480;
+        const contrastValue = 95;
+        const saturationValue = 200;
+        const MAX_DATA_POINTS = 10000000000000000000000000;
         const colors = ['cornflowerblue']; // Define an array of colors
+
+
+        function drawCrosshair(x, y) {
+            // Draw crosshair
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawROIs(); // Redraw ROIs
+
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y);
+            ctx.lineTo(x + 10, y);
+            ctx.moveTo(x, y - 10);
+            ctx.lineTo(x, y + 10);
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
 
 
         // Request camera permission when the page loads
@@ -157,6 +357,7 @@
         function requestCameraPermission() {
             const constraints = {
                 video: {
+                    
                     facingMode: isFrontCamera ? "user" : "environment",
                 }
             };
@@ -176,6 +377,8 @@
                 alert('Camera access is not supported on your browser.');
             }
         }
+
+
 
         function toggleCamera() {
             isFrontCamera = !isFrontCamera;
@@ -203,7 +406,7 @@
                 canvas.height = cap.videoHeight;
                 const context = canvas.getContext('2d');
                 context.drawImage(cap, 0, 0, cap.videoWidth, cap.videoHeight);
-                return canvas.toDataURL('image/jpeg');
+                return canvas.toDataURL('image/png');
             }
             return null;
         }
@@ -259,18 +462,39 @@
                         const adjustedImageData = applyAdjustments(imageData);
                         ctx.putImageData(adjustedImageData, 0, 0);
 
+                        // Draw ROIs
                         for (let i = 0; i < rois.length; i++) {
                             const roi = rois[i];
                             ctx.strokeStyle = 'red';
                             ctx.lineWidth = 1;
                             ctx.strokeRect(roi[0], roi[1], roi[2] - roi[0], roi[3] - roi[1]);
-                            const labelX = (roi[0] + roi[2]) / 2;
-                            const labelY = (roi[1] + roi[3]) / 2;
+
+                            // Draw label above the ROI
+                            const labelX = (roi[0] + roi[2]) / 2; // Centered horizontally
+                            const labelY = roi[1] - 40; // Adjust position
                             const labelText = `${roi[4]}`;
-                            ctx.fillStyle = 'white';
-                            ctx.font = '12px Arial';
+                            ctx.fillStyle = 'yellow';
+                            ctx.font = '8px Bahnschrift Condensed';
                             ctx.fillText(labelText, labelX, labelY);
                         }
+
+                        // Draw concentric rectangles at the center
+                        const centerX = canvas.width / 2;
+                        const centerY = canvas.height / 2;
+                        const outerWidth = 370;  // Width of the outer rectangle
+                        const outerHeight = 350; // Height of the outer rectangle
+                        const innerWidth = 360;  // Width of the inner rectangle
+                        const innerHeight = 340;  // Height of the inner rectangle
+
+                        // Draw outer rectangle
+                        ctx.strokeStyle = 'rgba(200, 55, 0, 0.8)'; // Red with transparency
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(centerX - outerWidth / 2, centerY - outerHeight / 2, outerWidth, outerHeight);
+
+                        // Draw inner rectangle
+                        ctx.strokeStyle = 'rgba(225, 225, 225, 0.6)'; // Green with transparency
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(centerX - innerWidth / 2, centerY - innerHeight / 2, innerWidth, innerHeight);
                     };
                     img.src = frame;
                 }
@@ -279,9 +503,10 @@
         }
 
 
+
         function startRecording() {
             recordingActive = true;
-            setInterval(saveRoiColors, 1 * 30 * 1000); // Save ROI colors automatically every second
+            setInterval(saveRoiColors, 1 * 60 * 1000); // Save ROI colors automatically every second
         }
 
 
@@ -375,19 +600,87 @@
 
 
 
+
+        const RECTANGLE_SIZE = 7;
+        const INNER_RECTANGLE = {
+            x: (canvas.width - 360) / 2,  // Adjusted for inner rectangle width
+            y: (canvas.height - 340) / 2, // Adjusted for inner rectangle height
+            width: 360,
+            height: 340
+        };
+
+
+        // Function to create an ROI when clicked
         function createRoi(event) {
             const canvas = document.getElementById('canvas');
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            const RECTANGLE_SIZE = 20;
-            const x1 = x - RECTANGLE_SIZE / 2;
-            const y1 = y - RECTANGLE_SIZE / 2;
-            const x2 = x1 + RECTANGLE_SIZE;
-            const y2 = y1 + RECTANGLE_SIZE;
-            rois.push([x1, y1, x2, y2, `S_${rois.length + 1}`]);
-            roiData.push([]);
+
+            // Check if the click is within the inner concentric rectangular box
+            if (x >= INNER_RECTANGLE.x && x <= (INNER_RECTANGLE.x + INNER_RECTANGLE.width) &&
+                y >= INNER_RECTANGLE.y && y <= (INNER_RECTANGLE.y + INNER_RECTANGLE.height)) {
+
+                // Calculate coordinates for the ROI
+                const x1 = x - RECTANGLE_SIZE / 2;
+                const y1 = y - RECTANGLE_SIZE / 2;
+                const x2 = x1 + RECTANGLE_SIZE;
+                const y2 = y1 + RECTANGLE_SIZE;
+
+                // Push ROI data and an empty array for its associated intensity data
+                rois.push([x1, y1, x2, y2, `S_${rois.length + 1}`]);
+                roiData.push([]);
+
+                // Optionally, provide user feedback
+                console.log(`ROI created: ${rois[rois.length - 1]}`);
+
+                // Draw the ROI on the canvas
+                const ctx = canvas.getContext('2d');
+                ctx.strokeStyle = 'blue'; // Set a default color for the ROI
+                ctx.strokeRect(x1, y1, RECTANGLE_SIZE, RECTANGLE_SIZE); // Draw rectangle
+            } else {
+                console.log("Click outside the allowed area. ROI not created.");
+            }
         }
+
+        // Function to undo the last created ROI
+        function undoLastRoi() {
+            if (rois.length > 0) {
+                // Remove the last ROI from the array
+                const lastRoi = rois.pop();
+                roiData.pop();
+
+                // Redraw the canvas, excluding the last ROI (which is undone)
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas
+
+                // Redraw all remaining ROIs
+                for (let i = 0; i < rois.length; i++) {
+                    const [x1, y1, x2, y2] = rois[i];
+                    ctx.strokeStyle = 'blue'; // Set the color for each ROI
+                    ctx.strokeRect(x1, y1, RECTANGLE_SIZE, RECTANGLE_SIZE);
+                }
+
+                // Provide user feedback
+                console.log(`Last ROI undone: ${lastRoi}`);
+            } else {
+                console.log("No ROIs to undo.");
+            }
+        }
+
+        // Event listener for right-click to undo the last created ROI
+        document.getElementById('canvas').addEventListener('contextmenu', function (event) {
+            event.preventDefault(); // Prevent the default right-click menu
+            undoLastRoi(); // Call the undo function on right-click
+        });
+
+        // Event listener for left-click to create an ROI
+        document.getElementById('canvas').addEventListener('click', createRoi);
+
+
+
+
 
         function getRoiColors(roi) {
             const canvas = document.getElementById('canvas');
@@ -509,6 +802,11 @@
             document.body.removeChild(link);
         }
 
+
+
+        // Initialize a tracking array to remember if an ROI has turned orange
+        let isOrange = new Array(rois.length).fill(false);  // Track which ROIs have turned orange
+
         function updateRealtimeGraph() {
             if (roiData.length > 0) {
                 const canvas = document.getElementById('graphCanvas');
@@ -554,14 +852,13 @@
                     ctx.lineTo(x, canvas.height - 30);
                     ctx.stroke();
                     ctx.fillStyle = 'black';
-                    // Convert time to minutes and display as label
                     const minutes = Math.floor(t);
                     const seconds = Math.round((t - minutes) * 60);
                     ctx.fillText(`${minutes}m ${seconds}s`, x - 20, canvas.height - 20);
                 }
 
-                const maxIntensity = 300;
-                const intensityInterval = Math.ceil(maxIntensity / 60);
+                const maxIntensity = 200;
+                const intensityInterval = Math.ceil(maxIntensity / 40);
 
                 // Draw Y-axis ticks and labels
                 for (let i = 0; i <= maxIntensity; i += intensityInterval) {
@@ -573,6 +870,7 @@
                     ctx.fillText(`${i}`, 30, y + 5);
                 }
 
+                // Loop through all the ROIs and draw their graphs
                 for (let i = 0; i < roiData.length; i++) {
                     const data = roiData[i];
                     const startIdx = Math.max(0, data.length - MAX_DATA_POINTS);
@@ -583,14 +881,13 @@
                         xValues.push(timeInterval);
                         yValues.push(data[j][1]);
 
-                        // Change graph color to green if y-value exceeds 50
-                        if (data[j][1] > 85) {
+                        // Check if intensity exceeds threshold and set graph color
+                        if (data[j][1] > 40) {
                             ctx.strokeStyle = 'lawngreen';
                         } else {
                             ctx.strokeStyle = colors[i % colors.length]; // Set color based on ROI index
                         }
                     }
-
 
                     // Draw the graph line
                     ctx.beginPath();
@@ -619,10 +916,20 @@
                 const legendCtx = legendCanvas.getContext('2d');
                 legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
 
+                // Draw baseline
+                const baselineY = canvas.height - 40 - (40 / maxIntensity) * (canvas.height - 60);
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]); // Dotted line
+                ctx.strokeStyle = 'grey';
+                ctx.lineWidth = 1;
+                ctx.moveTo(50, baselineY);
+                ctx.lineTo(canvas.width - 20, baselineY);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset to solid lines
 
                 // Draw legends
                 legendCtx.fillStyle = 'white';
-                legendCtx.font = '12px Arial';
+                legendCtx.font = '14px Bahnschrift Condensed';
                 const legendBoxSize = 20;
                 const legendSpacing = 5;
                 const maxLegendsPerColumn = 20;
@@ -636,28 +943,28 @@
                         const legendX = col * columnWidth;
                         const legendY = rowIndex * (legendBoxSize + legendSpacing) + 20;
 
-                        // Change the fill style to match the graph color
+                        // Check if the color should be set to orange or green based on intensity and time
                         if (roiData[i] && roiData[i].length > 0) {
                             const lastDataPoint = roiData[i][roiData[i].length - 1];
-                            if (lastDataPoint[1] > 85) {
-                                // Draw legend box and text
-                                legendCtx.fillStyle = 'lawngreen'; // Change to green if intensity exceeds 50
-                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                legendCtx.fillStyle = 'white';
-                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+                            if (lastDataPoint[1] > 40) {
+                                // If the intensity is above threshold, use green or orange based on the time condition
+                                if (!isOrange[i]) {
+                                    const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 40);
+                                    if (timeIndex !== -1) {
+                                        const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (80 * 60 * 1000); // Convert to minutes
+                                        if (timeInterval >= 1) {
+                                            isOrange[i] = true;  // Mark this ROI as orange
+                                        }
+                                    }
+                                }
 
-                                // Display time point alongside ROI if intensity exceeds 50
-                                // const timeIndex = roiData[i].findIndex(dataPoint => dataPoint[1] > 50);
-                                // if (timeIndex !== -1) {
-                                //   const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (60 * 1000); // Convert to minutes
-                                //   legendCtx.fillText(`(${timeInterval.toFixed(2)}m)`, legendX + 80, legendY + legendBoxSize / 2 + 5);
-                                //  }
+                                legendCtx.fillStyle = isOrange[i] ? 'orange' : 'lawngreen'; // Use orange if set to orange
                             } else {
-                                legendCtx.fillStyle = colors[i % colors.length]; // Use the same colors as in the graph
-                                legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
-                                legendCtx.fillStyle = 'white';
-                                legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
+                                legendCtx.fillStyle = colors[i % colors.length]; // Use default color
                             }
+                            legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
+                            legendCtx.fillStyle = 'white';
+                            legendCtx.fillText(rois[i][4], legendX + legendBoxSize + 5, legendY + legendBoxSize / 2 + 5);
                         } else {
                             legendCtx.fillStyle = colors[i % colors.length]; // Use default color if no data yet
                             legendCtx.fillRect(legendX, legendY, legendBoxSize, legendBoxSize);
@@ -671,93 +978,277 @@
             requestAnimationFrame(updateRealtimeGraph);
         }
 
-        function saveLegendDataToExcel() {
-            const legendCanvas = document.getElementById('legendCanvas');
-            const legendCtx = legendCanvas.getContext('2d');
 
-            // Prepare legend data
-            const legendData = [];
-            const legendIntensityData = []; // To store intensity rows for legends
-            const legendTimeData = [];      // To store time rows for legends
 
-            // Iterate through each ROI to extract intensity and time data
-            for (let j = 0; j < rois.length; j++) {
-                const roiName = rois[j][4]; // ROI name (legend text)
-                let legendColor = colors[j % colors.length]; // Default color from colors array
 
-                // Check if ROI's green value exceeds 50
-                if (roiData[j] && roiData[j].length > 0) {
-                    const lastDataPoint = roiData[j][roiData[j].length - 1];
-                    if (lastDataPoint[1] > 85) {
-                        legendColor = 'lawngreen'; // Set color to lawngreen if intensity exceeds 50
-                    }
+        // Get the legend canvas and its context
+        const legendCanvas = document.getElementById('legendCanvas');
+        const legendCtx = legendCanvas.getContext('2d');
+
+        // Clear the canvas to redraw the entire graph
+        legendCtx.clearRect(0, 0, legendCanvas.width, legendCanvas.height);
+
+        // Redraw the graph with the updated data for all ROIs
+        for (let j = 0; j < rois.length; j++) {
+            const roiName = rois[j][4];
+            let legendColor = colors[j % colors.length];
+
+            if (roiData[j] && roiData[j].length > 0) {
+                const lastDataPoint = roiData[j][roiData[j].length - 1];
+                if (lastDataPoint[1] > 40) {
+                    legendColor = 'lawngreen'; // Highlight if intensity exceeds 50
                 }
-
-                // Push legend details into legendData array
-                legendData.push([roiName, legendColor, rois[j][5], rois[j][6]]); // Include age (index 5) and sex (index 6)
-
-                // Initialize arrays to store intensity and time data for current ROI
-                const intensities = [];
-                const times = [];
-
-                // Extract intensity and time data for current ROI
-                if (roiData[j] && roiData[j].length > 0) {
-                    for (let k = 0; k < roiData[j].length; k++) {
-                        intensities.push(roiData[j][k][1]); // Assuming intensity is stored in the second index of roiData
-                        times.push((timeIntervals[k] - timeIntervals[0]) / 60000); // Convert to minutes
-                    }
-                }
-
-                // Push intensities and times as rows for legend
-                legendIntensityData.push(intensities);
-                legendTimeData.push(times);
             }
 
-            // Create a new workbook
-            const wb = XLSX.utils.book_new();
+            // Draw the graph for this ROI (from start to end of the data)
+            legendCtx.beginPath();
+            legendCtx.strokeStyle = legendColor;
+            legendCtx.lineWidth = 2;
 
-            // Add worksheet for legend data
-            const wsData = [];
-            const headerRow = ['Legend Name', 'Legend Color', 'Age', 'Gender', 'Data']; // Updated header row with 'Age' and 'Sex'
-            wsData.push(headerRow);
+            const intensities = [];
+            const times = [];
 
-            // Add legend data rows
-            for (let j = 0; j < legendData.length; j++) {
-                const roiName = legendData[j][0];
-                const legendColor = legendData[j][1];
-                const age = legendData[j][2];
-                const sex = legendData[j][3];
-
-                // Add legend data row
-                const legendDataRow = [roiName, legendColor, age, sex, '']; // Empty cell in 'Data' column
-                wsData.push(legendDataRow);
-
-                // Add intensity data row under 'Data'
-                const intensityDataRow = ['', '', '', '', 'Intensity', ...legendIntensityData[j]];
-                wsData.push(intensityDataRow);
-
-                // Add time data row under 'Data'
-                const timeDataRow = ['', '', '', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
-                wsData.push(timeDataRow);
+            // Collect intensity and time data for plotting
+            for (let k = 0; k < roiData[j].length; k++) {
+                intensities.push(roiData[j][k][1]); // Updated intensity values
+                times.push((timeIntervals[k] - timeIntervals[0]) / 60000); // Time in minutes
             }
 
-            // Convert data to worksheet
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            // Draw the graph for this ROI
+            for (let k = 0; k < times.length; k++) {
+                if (k === 0) {
+                    legendCtx.moveTo(times[k], intensities[k]);
+                } else {
+                    legendCtx.lineTo(times[k], intensities[k]);
+                }
+            }
 
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, 'Legend Data');
-
-            // Save workbook to Excel file
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            const blob = new Blob([wbout], { type: 'application/octet-stream' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'legend_data.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            legendCtx.stroke();
         }
+
+
+        function saveLegendDataToExcel() {
+            // Get the countdown time from the input box (in HH:MM:SS format)
+            const countdownInput = document.getElementById('countdownTimeInput').value.trim();
+
+            // Parse the input time string in HH:MM:SS format
+            let countdownTime = parseTimeToSeconds(countdownInput);
+
+            // If the input is invalid, default to 60 seconds
+            if (countdownTime === -1) {
+                countdownTime = 60 * 90;
+                alert("Default test time: 01:30:00.");
+            }
+
+            // Update the countdown display immediately
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            countdownDisplay.innerText = formatTime(countdownTime);
+
+            // Start the countdown
+            const countdownInterval = setInterval(() => {
+                countdownTime--; // Decrease countdown by 1 second
+                countdownDisplay.innerText = formatTime(countdownTime);
+
+                // Change color and start blinking when less than 10 seconds remain
+                if (countdownTime <= 10) {
+                    countdownDisplay.classList.add('critical', 'blinking');
+                }
+
+                // Once the countdown reaches zero, trigger the download
+                if (countdownTime <= 0) {
+                    clearInterval(countdownInterval);  // Stop the countdown interval
+                    downloadExcelFile();  // Trigger the download function
+                }
+            }, 1000);  // Update every 1 second
+
+            // Function to format time into HH:MM:SS
+            function formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const remainingSeconds = seconds % 60;
+
+                // Pad the hours, minutes, and seconds with leading zeros if necessary
+                return `${padWithZero(hours)}:${padWithZero(minutes)}:${padWithZero(remainingSeconds)}`;
+            }
+
+            // Function to add leading zeros for time values less than 10
+            function padWithZero(number) {
+                return number < 10 ? `0${number}` : number;
+            }
+
+            // Function to parse HH:MM:SS format into total seconds
+            function parseTimeToSeconds(timeString) {
+                const timeParts = timeString.split(':');
+                if (timeParts.length !== 3) return -1; // Invalid format
+
+                const hours = parseInt(timeParts[0]);
+                const minutes = parseInt(timeParts[1]);
+                const seconds = parseInt(timeParts[2]);
+
+                if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return -1;
+
+                // Convert the time to seconds
+                return hours * 3600 + minutes * 60 + seconds;
+            }
+
+            // Function to handle the Excel file download
+            function downloadExcelFile() {
+                const legendCanvas = document.getElementById('legendCanvas');
+                const legendCtx = legendCanvas.getContext('2d');
+
+                const legendData = [];
+                const legendIntensityData = [];
+                const legendTimeData = [];
+
+                for (let j = 0; j < rois.length; j++) {
+                    const roiName = rois[j][4];
+                    let legendColor = colors[j % colors.length];
+
+                    // Check if the color should be set to orange
+                    if (isOrange[j]) {
+                        legendColor = 'orange'; // Mark as orange if the condition is met
+                    } else if (roiData[j] && roiData[j].length > 0) {
+                        const lastDataPoint = roiData[j][roiData[j].length - 1];
+                        if (lastDataPoint[1] > 40) {
+                            legendColor = 'lawngreen'; // Highlight if intensity exceeds 40
+                        }
+                    }
+
+                    legendData.push([roiName, legendColor, rois[j][5], rois[j][6]]);
+
+                    const intensities = [];
+                    const times = [];
+
+                    for (let k = 0; k < roiData[j].length; k++) {
+                        intensities.push(roiData[j][k][1]);
+                        times.push((timeIntervals[k] - timeIntervals[0]) / 60000);
+                    }
+
+                    legendIntensityData.push(intensities);
+                    legendTimeData.push(times);
+                }
+
+                const wb = XLSX.utils.book_new();
+                const wsData = [];
+                const headerRow = ['Legend Name', 'Legend Color', 'Age', 'Gender', 'Data'];
+                wsData.push(headerRow);
+
+                for (let j = 0; j < legendData.length; j++) {
+                    const roiName = legendData[j][0];
+                    const legendColor = legendData[j][1];
+                    const age = legendData[j][2];
+                    const sex = legendData[j][3];
+
+                    const legendDataRow = [roiName, legendColor, age, sex, ''];
+                    wsData.push(legendDataRow);
+
+                    const intensityDataRow = ['', '', '', '', 'Intensity', ...legendIntensityData[j]];
+                    wsData.push(intensityDataRow);
+
+                    const timeDataRow = ['', '', '', '', 'Time', ...legendTimeData[j].map(time => time.toFixed(2))];
+                    wsData.push(timeDataRow);
+                }
+
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                XLSX.utils.book_append_sheet(wb, ws, 'Legend Data');
+
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/octet-stream' });
+
+                // Get current date and time for filename
+                const currentDate = new Date();
+
+                // Format the date as DD_MM_YYYY
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const year = currentDate.getFullYear();
+
+                // Format the time as HH:MM (with colon separator)
+                const hours = String(currentDate.getHours()).padStart(2, '0');
+                const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+
+                // Create the formatted date and time in DD_MM_YYYY_HH:MM format
+                const formattedDateTime = `${day}_${month}_${year}_${hours}${minutes}`;
+
+                // Create the download link with the formatted filename
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${formattedDateTime}_CRISPR-TB.xlsx`);  // Use the formatted date and time in the filename
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Add event listener to the "Save Legend Data" button
+        document.getElementById('saveLegendButton').addEventListener('click', function () {
+            // Trigger the save function and start the countdown and download
+            saveLegendDataToExcel();
+        });
+
+
+        function updateAnalysisMessageBox() {
+            // Initialize an array to store the names and colors of the relevant ROIs (only for orange logic)
+            let roiDetails = [];
+
+            // Iterate over all ROIs to check intensity and time conditions
+            for (let i = 0; i < roiData.length; i++) {
+                const data = roiData[i];
+
+                // Ensure the ROI data has points
+                if (data && data.length > 0) {
+                    const lastDataPoint = data[data.length - 1];
+                    const intensity = lastDataPoint[1]; // Intensity
+                    const time = lastDataPoint[0]; // Time
+
+                    // If intensity exceeds 40
+                    if (intensity > 40) {
+                        let roiColor;
+
+                        // Find the first time point when intensity exceeds 40
+                        const timeIndex = data.findIndex(dataPoint => dataPoint[1] > 40);
+                        if (timeIndex !== -1) {
+                            const timeInterval = (timeIntervals[timeIndex] - timeIntervals[0]) / (80 * 60 * 1000); // Convert to minutes
+
+                            // If time interval is greater than or equal to 1 minute, set orange color
+                            if (timeInterval >= 1) {
+                                roiColor = 'orange';
+                            }
+                        }
+
+                        // Add the ROI name and color to the roiDetails array only if it should be orange
+                        if (roiColor === 'orange') {
+                            roiDetails.push({
+                                name: rois[i][4],   // Name of the ROI
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Prepare content for the message box
+            const content = `
+        <p><strong>Please repeat the test(s):</strong></p>
+        <ul>
+            ${roiDetails.length > 0
+                    ? roiDetails.map(roi =>
+                        `<li><strong>${roi.name}</strong></li>`  // Only show ROI name, no color
+                    ).join('')
+                    : '<li class="noResults">All tests are OK</li>'
+                }
+        </ul>
+    `;
+
+            // Update the analysis box content
+            document.getElementById('analysisContent').innerHTML = content;
+        }
+
+        // Call updateAnalysisMessageBox every second
+        setInterval(updateAnalysisMessageBox, 1000); // Update every 1 second
+
+
+
 
 
         document.getElementById('assignNamesButton').addEventListener('click', assignRoiNames);
@@ -766,7 +1257,7 @@
         document.getElementById('saveButton').addEventListener('click', saveRoiDataToCSV);
         document.getElementById('saveGraphPNGButton').addEventListener('click', saveGraphAsPNG);
         document.getElementById('saveButton').addEventListener('click', saveRoiDataToExcel);
-        document.getElementById('saveLegendButton').addEventListener('click', saveLegendDataToExcel);
+
 
         function closeApp() {
             if (stream) {
@@ -776,7 +1267,9 @@
         }
 
     </script>
-    </div>
+
+
+
 </body>
 
 </html>
